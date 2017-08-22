@@ -3,12 +3,11 @@ package com.cherry.jeeves.utils.rest;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.http.HttpMethod;
@@ -26,14 +25,11 @@ public class StatefullRestTemplate extends RestTemplate {
 
     public StatefullRestTemplate() {
         super();
-        HttpParams params = new BasicHttpParams();
-        HttpClientParams.setRedirecting(params, false);
-
-        httpClient = new DefaultHttpClient(params);
+        httpClient = HttpClientBuilder.create().build();
         cookieStore = new BasicCookieStore();
         httpContext = new BasicHttpContext();
-        httpContext.setAttribute(ClientContext.COOKIE_STORE, getCookieStore());
-        httpContext.setAttribute(ClientContext.REQUEST_CONFIG, RequestConfig.custom().setRedirectsEnabled(true).build());
+        httpContext.setAttribute(HttpClientContext.COOKIE_STORE, getCookieStore());
+        httpContext.setAttribute(HttpClientContext.REQUEST_CONFIG, RequestConfig.custom().setRedirectsEnabled(true).build());
         statefullHttpComponentsClientHttpRequestFactory = new StatefullHttpComponentsClientHttpRequestFactory(httpClient, httpContext);
         super.setRequestFactory(statefullHttpComponentsClientHttpRequestFactory);
     }
@@ -45,7 +41,7 @@ public class StatefullRestTemplate extends RestTemplate {
     class StatefullHttpComponentsClientHttpRequestFactory extends HttpComponentsClientHttpRequestFactory {
         private final HttpContext httpContext;
 
-        public StatefullHttpComponentsClientHttpRequestFactory(HttpClient httpClient, HttpContext httpContext) {
+        StatefullHttpComponentsClientHttpRequestFactory(HttpClient httpClient, HttpContext httpContext) {
             super(httpClient);
             this.httpContext = httpContext;
         }
