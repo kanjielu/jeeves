@@ -1,5 +1,6 @@
 package com.cherry.jeeves.domain.response;
 
+import com.cherry.jeeves.domain.shared.Token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.junit.Assert;

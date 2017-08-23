@@ -1,4 +1,4 @@
-package com.cherry.jeeves.domain.response;
+package com.cherry.jeeves.domain.shared;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;

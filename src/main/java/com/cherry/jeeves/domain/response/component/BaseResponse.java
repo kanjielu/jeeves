@@ -1,4 +1,4 @@
-package com.cherry.jeeves.domain.response;
+package com.cherry.jeeves.domain.response.component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

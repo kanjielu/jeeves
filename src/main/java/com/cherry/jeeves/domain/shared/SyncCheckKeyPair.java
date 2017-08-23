@@ -1,14 +1,13 @@
-package com.cherry.jeeves.domain.response;
+package com.cherry.jeeves.domain.shared;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SyncKeyPair {
+public class SyncCheckKeyPair {
     @JsonProperty
     private int Key;
-    @JsonProperty
-    private String Val;
+    @JsonProperty private String Val;
 
     public int getKey() {
         return Key;
