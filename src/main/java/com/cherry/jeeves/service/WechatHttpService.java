@@ -3,11 +3,11 @@ package com.cherry.jeeves.service;
 import com.cherry.jeeves.domain.request.*;
 import com.cherry.jeeves.domain.request.component.BaseRequest;
 import com.cherry.jeeves.domain.response.*;
-import com.cherry.jeeves.domain.shared.BaseMsg;
-import com.cherry.jeeves.domain.shared.ChatRoomDescription;
-import com.cherry.jeeves.domain.shared.SyncKey;
+import com.cherry.jeeves.domain.shared.*;
 import com.cherry.jeeves.enums.MessageType;
 import com.cherry.jeeves.enums.ResultEnum;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -122,8 +124,25 @@ public class WechatHttpService {
         return code;
     }
 
-    public void processLoginInfo() {
-        //TODO
+    public RedirectLoginResult redirectLogin(String loginContent) throws IOException, RestClientException {
+        Pattern hostUrlPattern = Pattern.compile("window.redirect_uri=(.*)\\/cgi-bin");
+        Pattern redirectUrlPattern = Pattern.compile("window.redirect_uri=\\\"(.*)\\\";");
+        Matcher hostUrlMatcher = hostUrlPattern.matcher(loginContent);
+        Matcher redirectUrlMatcher = redirectUrlPattern.matcher(loginContent);
+        if (hostUrlMatcher.find() && redirectUrlMatcher.find()) {
+            String hostUrl = hostUrlMatcher.group(1);
+            String redirectUrl = redirectUrlMatcher.group(1);
+            ResponseEntity<String> responseEntity
+                    = restTemplate.exchange(redirectUrl, HttpMethod.GET, null, String.class);
+            String xmlString = responseEntity.getBody();
+            ObjectMapper xmlMapper = new XmlMapper();
+            Token token = xmlMapper.readValue(xmlString, Token.class);
+            RedirectLoginResult result = new RedirectLoginResult();
+            result.setToken(token);
+            result.setHostUrl(hostUrl);
+            return result;
+        }
+        throw new IOException("redirectLogin failed");
     }
 
     public SyncCheckResponse syncCheck(String hostUrl, String uin, String sid, String skey, String deviceId, String syncKey) throws RestClientException {
@@ -144,20 +163,36 @@ public class WechatHttpService {
         }
     }
 
-    public void getContact(String hostUrl) throws RestClientException {
-        //TODO
-        final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl);
+    public GetContactResponse getContact(String hostUrl, BaseRequest baseRequest) throws RestClientException {
+        long rnd = new Date().getTime();
+        final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, baseRequest.getSkey());
+        ResponseEntity<GetContactResponse> responseEntity
+                = restTemplate.exchange(url, HttpMethod.GET, null, GetContactResponse.class);
+        return responseEntity.getBody();
     }
 
-    public void acceptFriend() throws RestClientException {
-        //TODO
+    public VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws RestClientException {
+        long rnd = System.currentTimeMillis() / 3158L;
+        final String url = String.format(WECHAT_URL_VERIFY_USER, hostUrl, rnd, passTicket);
+        VerifyUserRequest request = new VerifyUserRequest();
+        request.setBaseRequest(baseRequest);
+        request.setOpcode(3);
+        request.setSceneList(new int[]{33});
+        request.setSceneListCount(1);
+        request.setSkey(baseRequest.getSkey());
+        request.setVerifyContent("");
+        request.setVerifyUserList(verifyUsers);
+        request.setVerifyUserListSize(verifyUsers.length);
+        ResponseEntity<VerifyUserResponse> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request), VerifyUserResponse.class);
+        return responseEntity.getBody();
     }
 
-    public void sendAppMsg() {
-        //TODO
+    public void sendAppMsg() throws RestClientException {
+        throw new NotImplementedException();
     }
 
-    public SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) {
+    public SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws RestClientException {
         final String rnd = String.valueOf(new Date().getTime() * 10);
         final String url = String.format(WECHAT_URL_SEND_MSG, hostUrl);
         SendMsgRequest request = new SendMsgRequest();
@@ -176,11 +211,11 @@ public class WechatHttpService {
         return responseEntity.getBody();
     }
 
-    public void sendImageMsg() {
-        //TODO
+    public void sendImageMsg() throws RestClientException {
+        throw new NotImplementedException();
     }
 
-    public OpLogResponse setAlias(String hostUrl, String passTicket, BaseRequest baseRequest, String newAlias, String userName) {
+    public OpLogResponse setAlias(String hostUrl, String passTicket, BaseRequest baseRequest, String newAlias, String userName) throws RestClientException {
         final String url = String.format(WECHAT_URL_OP_LOG, hostUrl, passTicket);
         OpLogRequest request = new OpLogRequest();
         request.setBaseRequest(baseRequest);
@@ -192,7 +227,7 @@ public class WechatHttpService {
         return responseEntity.getBody();
     }
 
-    public BatchGetContactResponse batchGetContact(String hostUrl, String passTicket, BaseRequest baseRequest, ChatRoomDescription[] list) {
+    public BatchGetContactResponse batchGetContact(String hostUrl, String passTicket, BaseRequest baseRequest, ChatRoomDescription[] list) throws RestClientException {
         long rnd = new Date().getTime();
         String url = String.format(WECHAT_URL_BATCH_GET_CONTACT, hostUrl, rnd, passTicket);
         BatchGetContactRequest request = new BatchGetContactRequest();
@@ -204,7 +239,7 @@ public class WechatHttpService {
         return responseEntity.getBody();
     }
 
-    public InitResponse init(String hostUrl, BaseRequest baseRequest, String passTicket) {
+    public InitResponse init(String hostUrl, BaseRequest baseRequest, String passTicket) throws RestClientException {
         long rnd = System.currentTimeMillis() / 3158L;
         String url = String.format(WECHAT_URL_INIT, hostUrl, rnd, passTicket);
         ResponseEntity<InitResponse> responseEntity
@@ -212,7 +247,8 @@ public class WechatHttpService {
         return responseEntity.getBody();
     }
 
-    public SyncResponse sync(String hostUrl, SyncKey syncKey, BaseRequest baseRequest, String passTicket) {
+    //msgtype =37,加我好友
+    public SyncResponse sync(String hostUrl, SyncKey syncKey, BaseRequest baseRequest, String passTicket) throws RestClientException {
         final String url = String.format(WECHAT_URL_SYNC, hostUrl, baseRequest.getSid(), baseRequest.getSkey(), passTicket);
         SyncRequest request = new SyncRequest();
         request.setBaseRequest(baseRequest);
@@ -223,7 +259,7 @@ public class WechatHttpService {
         return responseEntity.getBody();
     }
 
-    public StatusNotifyResponse statusNotify(String passTicket, BaseRequest baseRequest, String userName) {
+    public StatusNotifyResponse statusNotify(String passTicket, BaseRequest baseRequest, String userName) throws RestClientException {
         String rnd = String.valueOf(System.currentTimeMillis());
         final String url = String.format(WECHAT_URL_STATUS_NOTIFY, passTicket);
         StatusNotifyRequest request = new StatusNotifyRequest();

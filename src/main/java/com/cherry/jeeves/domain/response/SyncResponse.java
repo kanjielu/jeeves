@@ -32,7 +32,7 @@ public class SyncResponse {
     @JsonProperty
     private Object[] ModChatRoomMemberList;
     @JsonProperty
-    private Profile profile;
+    private Profile Profile;
     @JsonProperty
     private int ContinueFlag;
     @JsonProperty
@@ -115,11 +115,11 @@ public class SyncResponse {
     }
 
     public Profile getProfile() {
-        return profile;
+        return Profile;
     }
 
     public void setProfile(Profile profile) {
-        this.profile = profile;
+        this.Profile = profile;
     }
 
     public int getContinueFlag() {
