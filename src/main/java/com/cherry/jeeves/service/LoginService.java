@@ -11,4 +11,10 @@ public class LoginService {
 
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private WechatHttpService wechatHttpService;
+
+    public void login() {
+
+    }
 }

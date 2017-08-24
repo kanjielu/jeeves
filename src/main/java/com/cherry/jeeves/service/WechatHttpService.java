@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -68,20 +69,29 @@ public class WechatHttpService {
     @Value("${wechat.url.get_media}")
     private String WECHAT_URL_GET_MEDIA;
 
-    @Autowired
-    private RestTemplate restTemplate;
 
+    @Value("${wechat.ua}")
+    private String USER_AGENT;
     private static final Logger logger = LoggerFactory.getLogger(WechatHttpService.class);
+    private final RestTemplate restTemplate;
+    private final HttpHeaders header;
+
+    @Autowired
+    public WechatHttpService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+        this.header = new HttpHeaders();
+        header.set(HttpHeaders.USER_AGENT, USER_AGENT);
+    }
 
     public void logout(String hostUrl, String skey) throws RestClientException {
         final String url = String.format(WECHAT_URL_LOGOUT, hostUrl, skey);
-        restTemplate.exchange(url, HttpMethod.GET, null, Object.class);
+        restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), Object.class);
     }
 
     public byte[] getQR(String uuid) throws RestClientException {
         final String url = WECHAT_URL_QRCODE + uuid;
         ResponseEntity<byte[]> responseEntity
-                = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<byte[]>() {
+                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), new ParameterizedTypeReference<byte[]>() {
         });
         return responseEntity.getBody();
     }
@@ -90,7 +100,7 @@ public class WechatHttpService {
         final String regEx = "window.QRLogin.code = (\\d+); window.QRLogin.uuid = \"(\\S+?)\";";
         final String url = String.format(WECHAT_URL_UUID, System.currentTimeMillis());
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
         String body = responseEntity.getBody();
 
         Matcher matcher = Pattern.compile(regEx).matcher(body);
@@ -114,7 +124,7 @@ public class WechatHttpService {
         long time = System.currentTimeMillis();
         final String url = String.format(WECHAT_URL_LOGIN, uuid, time / 1579L, time);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
         String body = responseEntity.getBody();
         Matcher matcher = pattern.matcher(body);
         String code = null;
@@ -133,7 +143,7 @@ public class WechatHttpService {
             String hostUrl = hostUrlMatcher.group(1);
             String redirectUrl = redirectUrlMatcher.group(1);
             ResponseEntity<String> responseEntity
-                    = restTemplate.exchange(redirectUrl, HttpMethod.GET, null, String.class);
+                    = restTemplate.exchange(redirectUrl, HttpMethod.GET, new HttpEntity<>(header), String.class);
             String xmlString = responseEntity.getBody();
             ObjectMapper xmlMapper = new XmlMapper();
             Token token = xmlMapper.readValue(xmlString, Token.class);
@@ -145,12 +155,13 @@ public class WechatHttpService {
         throw new IOException("redirectLogin failed");
     }
 
-    public SyncCheckResponse syncCheck(String hostUrl, String uin, String sid, String skey, String deviceId, String syncKey) throws RestClientException {
+    public SyncCheckResponse syncCheck(String hostUrl, BaseRequest baseRequest, SyncKey syncKey) throws RestClientException {
         final Pattern pattern = Pattern.compile("window.synccheck=\\{retcode:\"(\\d+)\",selector:\"(\\d+)\"\\}");
         long rnd = new Date().getTime();
-        final String url = String.format(WECHAT_URL_SYNC_CHECK, hostUrl, uin, sid, skey, deviceId, rnd, syncKey, rnd);
+        final String url = String.format(WECHAT_URL_SYNC_CHECK, hostUrl,
+                baseRequest.getUin(), baseRequest.getSid(), baseRequest.getSkey(), baseRequest.getDeviceID(), rnd, syncKey, rnd);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
         String body = responseEntity.getBody();
         Matcher matcher = pattern.matcher(body);
         if (!matcher.find()) {
@@ -167,7 +178,7 @@ public class WechatHttpService {
         long rnd = new Date().getTime();
         final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, baseRequest.getSkey());
         ResponseEntity<GetContactResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.GET, null, GetContactResponse.class);
+                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), GetContactResponse.class);
         return responseEntity.getBody();
     }
 
@@ -184,7 +195,7 @@ public class WechatHttpService {
         request.setVerifyUserList(verifyUsers);
         request.setVerifyUserListSize(verifyUsers.length);
         ResponseEntity<VerifyUserResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request), VerifyUserResponse.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), VerifyUserResponse.class);
         return responseEntity.getBody();
     }
 
@@ -207,7 +218,7 @@ public class WechatHttpService {
         msg.setLocalID(rnd);
         request.setMsg(msg);
         ResponseEntity<SendMsgResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request), SendMsgResponse.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), SendMsgResponse.class);
         return responseEntity.getBody();
     }
 
@@ -223,7 +234,7 @@ public class WechatHttpService {
         request.setRemarkName(newAlias);
         request.setUserName(userName);
         ResponseEntity<OpLogResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request), OpLogResponse.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), OpLogResponse.class);
         return responseEntity.getBody();
     }
 
@@ -235,7 +246,7 @@ public class WechatHttpService {
         request.setCount(list.length);
         request.setList(list);
         ResponseEntity<BatchGetContactResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request), BatchGetContactResponse.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), BatchGetContactResponse.class);
         return responseEntity.getBody();
     }
 
@@ -255,7 +266,7 @@ public class WechatHttpService {
         request.setRr(-new Date().getTime() / 1000);
         request.setSyncKey(syncKey);
         ResponseEntity<SyncResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request), SyncResponse.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), SyncResponse.class);
         return responseEntity.getBody();
     }
 
@@ -269,7 +280,7 @@ public class WechatHttpService {
         request.setCode(3);
         request.setClientMsgId(rnd);
         ResponseEntity<StatusNotifyResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request), StatusNotifyResponse.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), StatusNotifyResponse.class);
         return responseEntity.getBody();
     }
 }
