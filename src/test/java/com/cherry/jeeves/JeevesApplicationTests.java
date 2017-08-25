@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class JeevesApplicationTests {
@@ -14,7 +16,7 @@ public class JeevesApplicationTests {
     private Jeeves jeeves;
 
     @Test
-    public void contextLoads() {
-        jeeves.test();
+    public void contextLoads() throws IOException {
+        jeeves.start();
     }
 }

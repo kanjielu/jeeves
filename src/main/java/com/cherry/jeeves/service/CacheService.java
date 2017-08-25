@@ -16,7 +16,10 @@ public class CacheService {
         this.owner = null;
         this.syncCheckKey = null;
         this.syncKey = null;
+        this.sKey = null;
         this.uuid = null;
+        this.uin = null;
+        this.sid = null;
     }
 
     private boolean alive = false;
@@ -27,6 +30,9 @@ public class CacheService {
     private Owner owner;
     private SyncKey syncKey;
     private SyncCheckKey syncCheckKey;
+    private String sKey;
+    private String uin;
+    private String sid;
 
     public boolean isAlive() {
         return alive;
@@ -90,5 +96,29 @@ public class CacheService {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getsKey() {
+        return sKey;
+    }
+
+    public void setsKey(String sKey) {
+        this.sKey = sKey;
+    }
+
+    public String getUin() {
+        return uin;
+    }
+
+    public void setUin(String uin) {
+        this.uin = uin;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 }

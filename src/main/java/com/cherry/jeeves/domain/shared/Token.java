@@ -1,9 +1,11 @@
 package com.cherry.jeeves.domain.shared;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 @JacksonXmlRootElement(localName = "error")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Token {
     @JacksonXmlProperty(localName = "ret")
     private int ret;
@@ -14,7 +16,7 @@ public class Token {
     @JacksonXmlProperty(localName = "wxsid")
     private String wxsid;
     @JacksonXmlProperty(localName = "wxuin")
-    private long wxuin;
+    private String wxuin;
     @JacksonXmlProperty(localName = "pass_ticket")
     private String pass_ticket;
     @JacksonXmlProperty(localName = "isgrayscale")
@@ -52,11 +54,11 @@ public class Token {
         this.wxsid = wxsid;
     }
 
-    public long getWxuin() {
+    public String getWxuin() {
         return wxuin;
     }
 
-    public void setWxuin(long wxuin) {
+    public void setWxuin(String wxuin) {
         this.wxuin = wxuin;
     }
 

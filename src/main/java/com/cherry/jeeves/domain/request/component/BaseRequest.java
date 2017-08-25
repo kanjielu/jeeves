@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseRequest {
     @JsonProperty
-    private long Uin;
+    private String Uin;
     @JsonProperty
     private String Sid;
     @JsonProperty
@@ -14,11 +14,11 @@ public class BaseRequest {
     @JsonProperty
     private String DeviceID;
 
-    public long getUin() {
+    public String getUin() {
         return Uin;
     }
 
-    public void setUin(long uin) {
+    public void setUin(String uin) {
         Uin = uin;
     }
 
