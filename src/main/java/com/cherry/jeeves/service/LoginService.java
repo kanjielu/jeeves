@@ -57,7 +57,7 @@ public class LoginService {
                     cacheService.setHostUrl(loginResponse.getHostUrl());
                     break;
                 } else {
-                    logger.info("login status = " + loginResponse.getCode());
+                    logger.info("[*] login status = " + loginResponse.getCode());
                 }
             }
             logger.info("[3] login completed");
@@ -79,18 +79,23 @@ public class LoginService {
             baseRequest.setSkey(cacheService.getsKey());
             String rndDeviceId = "e" + String.valueOf(new Random().nextLong()).substring(1, 16);
             baseRequest.setDeviceID(rndDeviceId);
-            InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), baseRequest);
+            InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), baseRequest, cacheService.getPassTicket());
             if (!checkBaseResponse(initResponse.getBaseResponse())) {
                 throw new WechatException("initResponse ret = " + initResponse.getBaseResponse().getRet());
             }
             //TODO add contacts to cache
             cacheService.setOwner(initResponse.getUser());
+            logger.info("[5] init completed");
             //6 status notify
-            StatusNotifyResponse statusNotifyResponse = wechatHttpService.statusNotify(cacheService.getPassTicket(), baseRequest, cacheService.getOwner().getUserName());
+            StatusNotifyResponse statusNotifyResponse =
+                    wechatHttpService.statusNotify(cacheService.getHostUrl(),
+                            cacheService.getPassTicket(),
+                            baseRequest,
+                            cacheService.getOwner().getUserName());
             if (!checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
                 throw new WechatException("statusNotifyResponse ret = " + statusNotifyResponse.getBaseResponse().getRet());
             }
-            logger.info("[5] init completed");
+            logger.info("[6] status notify completed");
             //scucess
 
         } catch (IOException ex) {

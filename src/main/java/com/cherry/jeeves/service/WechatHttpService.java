@@ -8,6 +8,7 @@ import com.cherry.jeeves.enums.MessageType;
 import com.cherry.jeeves.exception.WechatException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -70,18 +71,18 @@ public class WechatHttpService {
     private String WECHAT_URL_GET_MEDIA;
 
 
-    @Value("${wechat.ua}")
-    private String USER_AGENT;
     private final RestTemplate restTemplate;
     private final RestTemplate redirectableRestTemplate;
     private final HttpHeaders header;
+    private final ObjectMapper jsonMapper = new ObjectMapper();
 
     @Autowired
-    public WechatHttpService(RestTemplate restTemplate, RestTemplate redirectableRestTemplate) {
+    public WechatHttpService(RestTemplate restTemplate, RestTemplate redirectableRestTemplate, @Value("${wechat.ua}") String USER_AGENT) {
         this.restTemplate = restTemplate;
         this.redirectableRestTemplate = redirectableRestTemplate;
         this.header = new HttpHeaders();
         header.set(HttpHeaders.USER_AGENT, USER_AGENT);
+        header.set(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
     }
 
     public void logout(String hostUrl, String skey) throws IOException, RestClientException {
@@ -177,12 +178,12 @@ public class WechatHttpService {
     public GetContactResponse getContact(String hostUrl, BaseRequest baseRequest) throws IOException, RestClientException {
         long rnd = new Date().getTime();
         final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, escape(baseRequest.getSkey()));
-        ResponseEntity<GetContactResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), GetContactResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), GetContactResponse.class);
     }
 
-    public VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws RestClientException {
+    public VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws IOException, RestClientException {
         long rnd = System.currentTimeMillis() / 3158L;
         final String url = String.format(WECHAT_URL_VERIFY_USER, hostUrl, rnd, passTicket);
         VerifyUserRequest request = new VerifyUserRequest();
@@ -194,16 +195,16 @@ public class WechatHttpService {
         request.setVerifyContent("");
         request.setVerifyUserList(verifyUsers);
         request.setVerifyUserListSize(verifyUsers.length);
-        ResponseEntity<VerifyUserResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), VerifyUserResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), VerifyUserResponse.class);
     }
 
     public void sendAppMsg() throws RestClientException {
         throw new NotImplementedException();
     }
 
-    public SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws RestClientException {
+    public SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws IOException, RestClientException {
         final String rnd = String.valueOf(new Date().getTime() * 10);
         final String url = String.format(WECHAT_URL_SEND_MSG, hostUrl);
         SendMsgRequest request = new SendMsgRequest();
@@ -217,45 +218,47 @@ public class WechatHttpService {
         msg.setToUserName(toUserName);
         msg.setLocalID(rnd);
         request.setMsg(msg);
-        ResponseEntity<SendMsgResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), SendMsgResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), SendMsgResponse.class);
     }
 
     public void sendImageMsg() throws RestClientException {
         throw new NotImplementedException();
     }
 
-    public OpLogResponse setAlias(String hostUrl, String passTicket, BaseRequest baseRequest, String newAlias, String userName) throws RestClientException {
+    public OpLogResponse setAlias(String hostUrl, String passTicket, BaseRequest baseRequest, String newAlias, String userName) throws IOException, RestClientException {
         final String url = String.format(WECHAT_URL_OP_LOG, hostUrl, passTicket);
         OpLogRequest request = new OpLogRequest();
         request.setBaseRequest(baseRequest);
         request.setCmdId(2);
         request.setRemarkName(newAlias);
         request.setUserName(userName);
-        ResponseEntity<OpLogResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), OpLogResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), OpLogResponse.class);
     }
 
-    public BatchGetContactResponse batchGetContact(String hostUrl, String passTicket, BaseRequest baseRequest, ChatRoomDescription[] list) throws RestClientException {
+    public BatchGetContactResponse batchGetContact(String hostUrl, String passTicket, BaseRequest baseRequest, ChatRoomDescription[] list) throws IOException, RestClientException {
         long rnd = new Date().getTime();
         String url = String.format(WECHAT_URL_BATCH_GET_CONTACT, hostUrl, rnd, passTicket);
         BatchGetContactRequest request = new BatchGetContactRequest();
         request.setBaseRequest(baseRequest);
         request.setCount(list.length);
         request.setList(list);
-        ResponseEntity<BatchGetContactResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), BatchGetContactResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), BatchGetContactResponse.class);
     }
 
-    public InitResponse init(String hostUrl, BaseRequest baseRequest) throws RestClientException {
+    public InitResponse init(String hostUrl, BaseRequest baseRequest, String passTicket) throws IOException, RestClientException {
         long rnd = System.currentTimeMillis() / 3158L;
-        String url = String.format(WECHAT_URL_INIT, hostUrl, rnd);
-        ResponseEntity<InitResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(baseRequest), InitResponse.class);
-        return responseEntity.getBody();
+        String url = String.format(WECHAT_URL_INIT, hostUrl, rnd, passTicket);
+        InitRequest request = new InitRequest();
+        request.setBaseRequest(baseRequest);
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), InitResponse.class);
     }
 
     //msgtype =37,加我好友
@@ -265,23 +268,23 @@ public class WechatHttpService {
         request.setBaseRequest(baseRequest);
         request.setRr(-new Date().getTime() / 1000);
         request.setSyncKey(syncKey);
-        ResponseEntity<SyncResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), SyncResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), SyncResponse.class);
     }
 
-    public StatusNotifyResponse statusNotify(String passTicket, BaseRequest baseRequest, String userName) throws RestClientException {
+    public StatusNotifyResponse statusNotify(String hostUrl, String passTicket, BaseRequest baseRequest, String userName) throws IOException, RestClientException {
         String rnd = String.valueOf(System.currentTimeMillis());
-        final String url = String.format(WECHAT_URL_STATUS_NOTIFY, passTicket);
+        final String url = String.format(WECHAT_URL_STATUS_NOTIFY, hostUrl, passTicket);
         StatusNotifyRequest request = new StatusNotifyRequest();
         request.setBaseRequest(baseRequest);
         request.setFromUserName(userName);
         request.setToUserName(userName);
         request.setCode(3);
         request.setClientMsgId(rnd);
-        ResponseEntity<StatusNotifyResponse> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), StatusNotifyResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), StatusNotifyResponse.class);
     }
 
     private String escape(String str) throws IOException {
