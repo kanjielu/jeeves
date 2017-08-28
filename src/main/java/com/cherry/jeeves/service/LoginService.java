@@ -1,10 +1,9 @@
 package com.cherry.jeeves.service;
 
 import com.cherry.jeeves.domain.request.component.BaseRequest;
-import com.cherry.jeeves.domain.response.InitResponse;
-import com.cherry.jeeves.domain.response.LoginResult;
-import com.cherry.jeeves.domain.response.StatusNotifyResponse;
+import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.response.component.BaseResponse;
+import com.cherry.jeeves.domain.shared.ChatRoomDescription;
 import com.cherry.jeeves.domain.shared.Token;
 import com.cherry.jeeves.enums.LoginCode;
 import com.cherry.jeeves.exception.WechatException;
@@ -16,7 +15,9 @@ import org.springframework.stereotype.Service;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class LoginService {
@@ -68,36 +69,73 @@ public class LoginService {
                 cacheService.setsKey(token.getSkey());
                 cacheService.setSid(token.getWxsid());
                 cacheService.setUin(token.getWxuin());
+                BaseRequest baseRequest = new BaseRequest();
+                baseRequest.setUin(cacheService.getUin());
+                baseRequest.setSid(cacheService.getSid());
+                baseRequest.setSkey(cacheService.getsKey());
+                String rndDeviceId = "e" + String.valueOf(new Random().nextLong()).substring(1, 16);
+                baseRequest.setDeviceID(rndDeviceId);
+                cacheService.setBaseRequest(baseRequest);
             } else {
                 throw new WechatException("token ret = " + token.getRet());
             }
             logger.info("[4] redirect completed");
             //5 init
-            BaseRequest baseRequest = new BaseRequest();
-            baseRequest.setUin(cacheService.getUin());
-            baseRequest.setSid(cacheService.getSid());
-            baseRequest.setSkey(cacheService.getsKey());
-            String rndDeviceId = "e" + String.valueOf(new Random().nextLong()).substring(1, 16);
-            baseRequest.setDeviceID(rndDeviceId);
-            InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), baseRequest, cacheService.getPassTicket());
+            InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), cacheService.getBaseRequest(), cacheService.getPassTicket());
             if (!checkBaseResponse(initResponse.getBaseResponse())) {
                 throw new WechatException("initResponse ret = " + initResponse.getBaseResponse().getRet());
             }
-            //TODO add contacts to cache
             cacheService.setOwner(initResponse.getUser());
             logger.info("[5] init completed");
             //6 status notify
             StatusNotifyResponse statusNotifyResponse =
                     wechatHttpService.statusNotify(cacheService.getHostUrl(),
                             cacheService.getPassTicket(),
-                            baseRequest,
+                            cacheService.getBaseRequest(),
                             cacheService.getOwner().getUserName());
             if (!checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
                 throw new WechatException("statusNotifyResponse ret = " + statusNotifyResponse.getBaseResponse().getRet());
             }
             logger.info("[6] status notify completed");
-            //scucess
+            //7 get contact
+            long seq = 0;
+            do {
+                GetContactResponse getContactResponse = wechatHttpService.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), seq);
+                if (!checkBaseResponse(getContactResponse.getBaseResponse())) {
+                    throw new WechatException("getContactResponse ret = " + getContactResponse.getBaseResponse().getRet());
+                } else {
+                    logger.info("[*] getContactResponse seq = " + getContactResponse.getSeq());
+                    logger.info("[*] getContactResponse memberCount = " + getContactResponse.getMemberCount());
+                    seq = getContactResponse.getSeq();
+                    cacheService.getContacts().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(x -> (x.getVerifyFlag() & 8) == 0).collect(Collectors.toSet()));
+                    cacheService.getMediaPlatforms().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(x -> (x.getVerifyFlag() & 8) > 0).collect(Collectors.toSet()));
+                }
+            } while (seq > 0);
+            logger.info("[7] get contact completed");
+            //8 batch get contact
+            ChatRoomDescription[] chatRoomDescriptions = Arrays.stream(initResponse.getContactList())
+                    .map(x -> x.getUserName())
+                    .filter(x -> x != null && x.startsWith("@@"))
+                    .map(x -> {
+                        ChatRoomDescription description = new ChatRoomDescription();
+                        description.setUserName(x);
+                        return description;
+                    })
+                    .toArray(ChatRoomDescription[]::new);
+            BatchGetContactResponse batchGetContactResponse = wechatHttpService.batchGetContact(
+                    cacheService.getHostUrl(),
+                    cacheService.getBaseRequest(),
+                    cacheService.getPassTicket(),
+                    chatRoomDescriptions);
+            if (!checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
+                throw new WechatException("batchGetContactResponse ret = " + batchGetContactResponse.getBaseResponse().getRet());
+            } else {
+                logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
+                cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
 
+            }
+            logger.info("[8] batch get contact completed");
+            logger.info("[-] login process completed");
         } catch (IOException ex) {
             throw new WechatException(ex);
         }

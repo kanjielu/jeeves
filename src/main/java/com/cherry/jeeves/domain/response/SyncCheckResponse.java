@@ -8,7 +8,7 @@ public class SyncCheckResponse {
     @JsonProperty
     private String retcode;
     @JsonProperty
-    private String selector;
+    private int selector;
 
     public String getRetcode() {
         return retcode;
@@ -18,11 +18,11 @@ public class SyncCheckResponse {
         this.retcode = retcode;
     }
 
-    public String getSelector() {
+    public int getSelector() {
         return selector;
     }
 
-    public void setSelector(String selector) {
+    public void setSelector(int selector) {
         this.selector = selector;
     }
 }

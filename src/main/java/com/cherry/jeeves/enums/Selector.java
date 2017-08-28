@@ -7,6 +7,10 @@ public enum  Selector {
 
     private int code;
 
+    public int getCode() {
+        return code;
+    }
+
     Selector(int code) {
         this.code = code;
     }

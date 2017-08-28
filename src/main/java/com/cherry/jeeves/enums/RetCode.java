@@ -11,4 +11,8 @@ public enum RetCode {
     RetCode(int code) {
         this.code = code;
     }
+
+    public int getCode() {
+        return code;
+    }
 }

@@ -1,10 +1,14 @@
 package com.cherry.jeeves.service;
 
 import com.cherry.jeeves.domain.request.component.BaseRequest;
+import com.cherry.jeeves.domain.shared.Contact;
 import com.cherry.jeeves.domain.shared.Owner;
 import com.cherry.jeeves.domain.shared.SyncCheckKey;
 import com.cherry.jeeves.domain.shared.SyncKey;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class CacheService {
@@ -20,6 +24,9 @@ public class CacheService {
         this.uuid = null;
         this.uin = null;
         this.sid = null;
+        this.contacts.clear();
+        this.mediaPlatforms.clear();
+        this.chatRooms.clear();
     }
 
     private boolean alive = false;
@@ -33,6 +40,10 @@ public class CacheService {
     private String sKey;
     private String uin;
     private String sid;
+
+    private Set<Contact> contacts = new HashSet<>();
+    private Set<Contact> mediaPlatforms = new HashSet<>();
+    private Set<Contact> chatRooms = new HashSet<>();
 
     public boolean isAlive() {
         return alive;
@@ -120,5 +131,17 @@ public class CacheService {
 
     public void setSid(String sid) {
         this.sid = sid;
+    }
+
+    public Set<Contact> getContacts() {
+        return contacts;
+    }
+
+    public Set<Contact> getMediaPlatforms() {
+        return mediaPlatforms;
+    }
+
+    public Set<Contact> getChatRooms() {
+        return chatRooms;
     }
 }

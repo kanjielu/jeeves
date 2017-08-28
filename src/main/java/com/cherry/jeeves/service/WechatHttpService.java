@@ -170,14 +170,14 @@ public class WechatHttpService {
         } else {
             SyncCheckResponse result = new SyncCheckResponse();
             result.setRetcode(matcher.group(1));
-            result.setSelector(matcher.group(2));
+            result.setSelector(Integer.valueOf(matcher.group(2)));
             return result;
         }
     }
 
-    public GetContactResponse getContact(String hostUrl, BaseRequest baseRequest) throws IOException, RestClientException {
+    public GetContactResponse getContact(String hostUrl, BaseRequest baseRequest, long seq) throws IOException, RestClientException {
         long rnd = new Date().getTime();
-        final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, escape(baseRequest.getSkey()));
+        final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, seq, escape(baseRequest.getSkey()));
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), GetContactResponse.class);
@@ -239,7 +239,7 @@ public class WechatHttpService {
         return jsonMapper.readValue(responseEntity.getBody(), OpLogResponse.class);
     }
 
-    public BatchGetContactResponse batchGetContact(String hostUrl, String passTicket, BaseRequest baseRequest, ChatRoomDescription[] list) throws IOException, RestClientException {
+    public BatchGetContactResponse batchGetContact(String hostUrl, BaseRequest baseRequest, String passTicket, ChatRoomDescription[] list) throws IOException, RestClientException {
         long rnd = new Date().getTime();
         String url = String.format(WECHAT_URL_BATCH_GET_CONTACT, hostUrl, rnd, passTicket);
         BatchGetContactRequest request = new BatchGetContactRequest();

@@ -7,9 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Contact extends Member {
     @JsonProperty
     private int MemberCount;
-    //TODO
     @JsonProperty
-    private Object[] MemberList;
+    private ChatRoomMember[] MemberList;
     @JsonProperty
     private int OwnerUin;
     @JsonProperty
@@ -121,5 +120,29 @@ public class Contact extends Member {
 
     public void setIsOwner(int isOwner) {
         IsOwner = isOwner;
+    }
+
+    public int getMemberCount() {
+        return MemberCount;
+    }
+
+    public void setMemberCount(int memberCount) {
+        MemberCount = memberCount;
+    }
+
+    public ChatRoomMember[] getMemberList() {
+        return MemberList;
+    }
+
+    public void setMemberList(ChatRoomMember[] memberList) {
+        MemberList = memberList;
+    }
+
+    public int getOwnerUin() {
+        return OwnerUin;
+    }
+
+    public void setOwnerUin(int ownerUin) {
+        OwnerUin = ownerUin;
     }
 }
