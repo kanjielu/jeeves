@@ -26,6 +26,8 @@ public class LoginService {
     @Autowired
     private CacheService cacheService;
     @Autowired
+    private SyncServie syncServie;
+    @Autowired
     private WechatHttpService wechatHttpService;
 
     public void login() {
@@ -85,6 +87,7 @@ public class LoginService {
             if (!checkBaseResponse(initResponse.getBaseResponse())) {
                 throw new WechatException("initResponse ret = " + initResponse.getBaseResponse().getRet());
             }
+            cacheService.setSyncKey(initResponse.getSyncKey());
             cacheService.setOwner(initResponse.getUser());
             logger.info("[5] init completed");
             //6 status notify
@@ -122,20 +125,23 @@ public class LoginService {
                         return description;
                     })
                     .toArray(ChatRoomDescription[]::new);
-            BatchGetContactResponse batchGetContactResponse = wechatHttpService.batchGetContact(
-                    cacheService.getHostUrl(),
-                    cacheService.getBaseRequest(),
-                    cacheService.getPassTicket(),
-                    chatRoomDescriptions);
-            if (!checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
-                throw new WechatException("batchGetContactResponse ret = " + batchGetContactResponse.getBaseResponse().getRet());
-            } else {
-                logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
-                cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
-
+            if (chatRoomDescriptions.length > 0) {
+                BatchGetContactResponse batchGetContactResponse = wechatHttpService.batchGetContact(
+                        cacheService.getHostUrl(),
+                        cacheService.getBaseRequest(),
+                        cacheService.getPassTicket(),
+                        chatRoomDescriptions);
+                if (!checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
+                    throw new WechatException("batchGetContactResponse ret = " + batchGetContactResponse.getBaseResponse().getRet());
+                } else {
+                    logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
+                    cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
+                }
             }
             logger.info("[8] batch get contact completed");
+            cacheService.setAlive(true);
             logger.info("[-] login process completed");
+            startReceiving();
         } catch (IOException ex) {
             throw new WechatException(ex);
         }
@@ -143,5 +149,17 @@ public class LoginService {
 
     private boolean checkBaseResponse(BaseResponse baseResponse) {
         return baseResponse.getRet() == 0;
+    }
+
+    private void startReceiving() {
+        new Thread(() -> {
+            while (cacheService.isAlive()) {
+                try {
+                    syncServie.sync();
+                } catch (IOException ex) {
+                    logger.error(ex.getMessage(), ex);
+                }
+            }
+        }).start();
     }
 }

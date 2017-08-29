@@ -2,6 +2,7 @@ package com.cherry.jeeves.domain.response;
 
 import com.cherry.jeeves.domain.response.component.BaseResponse;
 import com.cherry.jeeves.domain.shared.Contact;
+import com.cherry.jeeves.domain.shared.MPSubscription;
 import com.cherry.jeeves.domain.shared.Owner;
 import com.cherry.jeeves.domain.shared.SyncKey;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,7 +35,7 @@ public class InitResponse {
     @JsonProperty
     private int MPSubscribeMsgCount;
     @JsonProperty
-    private Object[] MPSubscribeMsgList;
+    private MPSubscription[] MPSubscribeMsgList;
     @JsonProperty
     private long ClickReportInterval;
 
@@ -134,11 +135,11 @@ public class InitResponse {
         this.MPSubscribeMsgCount = MPSubscribeMsgCount;
     }
 
-    public Object[] getMPSubscribeMsgList() {
+    public MPSubscription[] getMPSubscribeMsgList() {
         return MPSubscribeMsgList;
     }
 
-    public void setMPSubscribeMsgList(Object[] MPSubscribeMsgList) {
+    public void setMPSubscribeMsgList(MPSubscription[] MPSubscribeMsgList) {
         this.MPSubscribeMsgList = MPSubscribeMsgList;
     }
 
