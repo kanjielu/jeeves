@@ -46,7 +46,7 @@ public enum MessageType {
      */
     VOIP(50),
     /**
-     * 微信初始化
+     * 群聊初始化
      */
     INIT(51),
     /**

@@ -6,15 +6,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncCheckResponse {
     @JsonProperty
-    private String retcode;
+    private int retcode;
     @JsonProperty
     private int selector;
 
-    public String getRetcode() {
+    public int getRetcode() {
         return retcode;
     }
 
-    public void setRetcode(String retcode) {
+    public void setRetcode(int retcode) {
         this.retcode = retcode;
     }
 

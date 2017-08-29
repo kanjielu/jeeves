@@ -15,6 +15,8 @@ public class CacheService {
 
     public void reset() {
         this.hostUrl = null;
+        this.syncUrl = null;
+        this.fileUrl = null;
         this.passTicket = null;
         this.baseRequest = null;
         this.owner = null;
@@ -32,6 +34,8 @@ public class CacheService {
     private boolean alive = false;
     private String uuid;
     private String hostUrl;
+    private String syncUrl;
+    private String fileUrl;
     private String passTicket;
     private BaseRequest baseRequest;
     private Owner owner;
@@ -143,5 +147,33 @@ public class CacheService {
 
     public Set<Contact> getChatRooms() {
         return chatRooms;
+    }
+
+    public String getSyncUrl() {
+        return syncUrl;
+    }
+
+    public void setSyncUrl(String syncUrl) {
+        this.syncUrl = syncUrl;
+    }
+
+    public void setContacts(Set<Contact> contacts) {
+        this.contacts = contacts;
+    }
+
+    public void setMediaPlatforms(Set<Contact> mediaPlatforms) {
+        this.mediaPlatforms = mediaPlatforms;
+    }
+
+    public void setChatRooms(Set<Contact> chatRooms) {
+        this.chatRooms = chatRooms;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 }

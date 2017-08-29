@@ -8,6 +8,7 @@ import com.cherry.jeeves.enums.MessageType;
 import com.cherry.jeeves.exception.WechatException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,8 @@ import org.springframework.web.client.RestTemplate;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -82,7 +85,7 @@ public class WechatHttpService {
         this.redirectableRestTemplate = redirectableRestTemplate;
         this.header = new HttpHeaders();
         header.set(HttpHeaders.USER_AGENT, USER_AGENT);
-        header.set(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+        header.set(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
     }
 
     public void logout(String hostUrl, String skey) throws IOException, RestClientException {
@@ -156,20 +159,28 @@ public class WechatHttpService {
         return xmlMapper.readValue(xmlString, Token.class);
     }
 
-    public SyncCheckResponse syncCheck(String hostUrl, BaseRequest baseRequest, SyncKey syncKey) throws IOException, RestClientException {
+    public SyncCheckResponse syncCheck(String hostUrl, BaseRequest baseRequest, SyncKey syncKey) throws IOException, URISyntaxException, RestClientException {
         final Pattern pattern = Pattern.compile("window.synccheck=\\{retcode:\"(\\d+)\",selector:\"(\\d+)\"\\}");
-        long rnd = new Date().getTime();
-        final String url = String.format(WECHAT_URL_SYNC_CHECK, hostUrl,
-                baseRequest.getUin(), baseRequest.getSid(), escape(baseRequest.getSkey()), baseRequest.getDeviceID(), rnd, escape(syncKey.toString()), rnd);
+
+        final String path = String.format(WECHAT_URL_SYNC_CHECK, hostUrl);
+        URIBuilder builder = new URIBuilder(path);
+        builder.addParameter("uin", baseRequest.getUin());
+        builder.addParameter("sid", baseRequest.getSid());
+        builder.addParameter("skey", baseRequest.getSkey());
+        builder.addParameter("deviceid", baseRequest.getDeviceID());
+        builder.addParameter("synckey", syncKey.toString());
+        builder.addParameter("r", String.valueOf(new Date().getTime()));
+        builder.addParameter("_", String.valueOf(new Date().getTime()));
+        final URI uri = builder.build().toURL().toURI();
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
+                = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(header), String.class);
         String body = responseEntity.getBody();
         Matcher matcher = pattern.matcher(body);
         if (!matcher.find()) {
             return null;
         } else {
             SyncCheckResponse result = new SyncCheckResponse();
-            result.setRetcode(matcher.group(1));
+            result.setRetcode(Integer.valueOf(matcher.group(1)));
             result.setSelector(Integer.valueOf(matcher.group(2)));
             return result;
         }

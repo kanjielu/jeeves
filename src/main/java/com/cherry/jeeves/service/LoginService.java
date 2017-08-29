@@ -2,11 +2,11 @@ package com.cherry.jeeves.service;
 
 import com.cherry.jeeves.domain.request.component.BaseRequest;
 import com.cherry.jeeves.domain.response.*;
-import com.cherry.jeeves.domain.response.component.BaseResponse;
 import com.cherry.jeeves.domain.shared.ChatRoomDescription;
 import com.cherry.jeeves.domain.shared.Token;
 import com.cherry.jeeves.enums.LoginCode;
 import com.cherry.jeeves.exception.WechatException;
+import com.cherry.jeeves.utils.WechatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -58,6 +59,8 @@ public class LoginService {
                         throw new WechatException("redirectUrl can't be found");
                     }
                     cacheService.setHostUrl(loginResponse.getHostUrl());
+                    cacheService.setSyncUrl(loginResponse.getHostUrl().replaceFirst("^https://","https://webpush."));
+                    cacheService.setFileUrl(loginResponse.getHostUrl().replaceFirst("^https://","https://file."));
                     break;
                 } else {
                     logger.info("[*] login status = " + loginResponse.getCode());
@@ -84,7 +87,7 @@ public class LoginService {
             logger.info("[4] redirect completed");
             //5 init
             InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), cacheService.getBaseRequest(), cacheService.getPassTicket());
-            if (!checkBaseResponse(initResponse.getBaseResponse())) {
+            if (!WechatUtils.checkBaseResponse(initResponse.getBaseResponse())) {
                 throw new WechatException("initResponse ret = " + initResponse.getBaseResponse().getRet());
             }
             cacheService.setSyncKey(initResponse.getSyncKey());
@@ -96,7 +99,7 @@ public class LoginService {
                             cacheService.getPassTicket(),
                             cacheService.getBaseRequest(),
                             cacheService.getOwner().getUserName());
-            if (!checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
+            if (!WechatUtils.checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
                 throw new WechatException("statusNotifyResponse ret = " + statusNotifyResponse.getBaseResponse().getRet());
             }
             logger.info("[6] status notify completed");
@@ -104,7 +107,7 @@ public class LoginService {
             long seq = 0;
             do {
                 GetContactResponse getContactResponse = wechatHttpService.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), seq);
-                if (!checkBaseResponse(getContactResponse.getBaseResponse())) {
+                if (!WechatUtils.checkBaseResponse(getContactResponse.getBaseResponse())) {
                     throw new WechatException("getContactResponse ret = " + getContactResponse.getBaseResponse().getRet());
                 } else {
                     logger.info("[*] getContactResponse seq = " + getContactResponse.getSeq());
@@ -131,7 +134,7 @@ public class LoginService {
                         cacheService.getBaseRequest(),
                         cacheService.getPassTicket(),
                         chatRoomDescriptions);
-                if (!checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
+                if (!WechatUtils.checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
                     throw new WechatException("batchGetContactResponse ret = " + batchGetContactResponse.getBaseResponse().getRet());
                 } else {
                     logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
@@ -147,16 +150,16 @@ public class LoginService {
         }
     }
 
-    private boolean checkBaseResponse(BaseResponse baseResponse) {
-        return baseResponse.getRet() == 0;
-    }
 
     private void startReceiving() {
         new Thread(() -> {
             while (cacheService.isAlive()) {
                 try {
-                    syncServie.sync();
+                    syncServie.listen();
                 } catch (IOException ex) {
+                    logger.error(ex.getMessage(), ex);
+                }
+                catch (URISyntaxException ex) {
                     logger.error(ex.getMessage(), ex);
                 }
             }
