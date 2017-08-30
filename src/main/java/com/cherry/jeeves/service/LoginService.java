@@ -59,8 +59,8 @@ public class LoginService {
                         throw new WechatException("redirectUrl can't be found");
                     }
                     cacheService.setHostUrl(loginResponse.getHostUrl());
-                    cacheService.setSyncUrl(loginResponse.getHostUrl().replaceFirst("^https://","https://webpush."));
-                    cacheService.setFileUrl(loginResponse.getHostUrl().replaceFirst("^https://","https://file."));
+                    cacheService.setSyncUrl(loginResponse.getHostUrl().replaceFirst("^https://", "https://webpush."));
+                    cacheService.setFileUrl(loginResponse.getHostUrl().replaceFirst("^https://", "https://file."));
                     break;
                 } else {
                     logger.info("[*] login status = " + loginResponse.getCode());
@@ -98,7 +98,7 @@ public class LoginService {
                     wechatHttpService.statusNotify(cacheService.getHostUrl(),
                             cacheService.getPassTicket(),
                             cacheService.getBaseRequest(),
-                            cacheService.getOwner().getUserName());
+                            cacheService.getOwner().getUserName(), 3);
             if (!WechatUtils.checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
                 throw new WechatException("statusNotifyResponse ret = " + statusNotifyResponse.getBaseResponse().getRet());
             }
@@ -158,8 +158,7 @@ public class LoginService {
                     syncServie.listen();
                 } catch (IOException ex) {
                     logger.error(ex.getMessage(), ex);
-                }
-                catch (URISyntaxException ex) {
+                } catch (URISyntaxException ex) {
                     logger.error(ex.getMessage(), ex);
                 }
             }

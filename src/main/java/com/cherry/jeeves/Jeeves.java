@@ -1,7 +1,6 @@
 package com.cherry.jeeves;
 
 import com.cherry.jeeves.service.LoginService;
-import com.cherry.jeeves.service.WechatHttpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

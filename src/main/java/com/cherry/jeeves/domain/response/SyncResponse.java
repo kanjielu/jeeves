@@ -1,10 +1,7 @@
 package com.cherry.jeeves.domain.response;
 
 import com.cherry.jeeves.domain.response.component.BaseResponse;
-import com.cherry.jeeves.domain.shared.Message;
-import com.cherry.jeeves.domain.shared.Profile;
-import com.cherry.jeeves.domain.shared.SyncCheckKey;
-import com.cherry.jeeves.domain.shared.SyncKey;
+import com.cherry.jeeves.domain.shared.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,19 +15,16 @@ public class SyncResponse {
     private Message[] AddMsgList;
     @JsonProperty
     private int ModContactCount;
-    //TODO
     @JsonProperty
-    private Object[] ModContactList;
+    private Contact[] ModContactList;
     @JsonProperty
     private int DelContactCount;
-    //TODO
     @JsonProperty
-    private Object[] DelContactList;
+    private Contact[] DelContactList;
     @JsonProperty
     private int ModChatRoomMemberCount;
-    //TODO
     @JsonProperty
-    private Object[] ModChatRoomMemberList;
+    private Contact[] ModChatRoomMemberList;
     @JsonProperty
     private Profile Profile;
     @JsonProperty
@@ -74,11 +68,11 @@ public class SyncResponse {
         ModContactCount = modContactCount;
     }
 
-    public Object[] getModContactList() {
+    public Contact[] getModContactList() {
         return ModContactList;
     }
 
-    public void setModContactList(Object[] modContactList) {
+    public void setModContactList(Contact[] modContactList) {
         ModContactList = modContactList;
     }
 
@@ -90,11 +84,11 @@ public class SyncResponse {
         DelContactCount = delContactCount;
     }
 
-    public Object[] getDelContactList() {
+    public Contact[] getDelContactList() {
         return DelContactList;
     }
 
-    public void setDelContactList(Object[] delContactList) {
+    public void setDelContactList(Contact[] delContactList) {
         DelContactList = delContactList;
     }
 
@@ -106,11 +100,11 @@ public class SyncResponse {
         ModChatRoomMemberCount = modChatRoomMemberCount;
     }
 
-    public Object[] getModChatRoomMemberList() {
+    public Contact[] getModChatRoomMemberList() {
         return ModChatRoomMemberList;
     }
 
-    public void setModChatRoomMemberList(Object[] modChatRoomMemberList) {
+    public void setModChatRoomMemberList(Contact[] modChatRoomMemberList) {
         ModChatRoomMemberList = modChatRoomMemberList;
     }
 
@@ -146,7 +140,7 @@ public class SyncResponse {
         this.SKey = SKey;
     }
 
-    public  SyncCheckKey getSyncCheckKey() {
+    public SyncCheckKey getSyncCheckKey() {
         return SyncCheckKey;
     }
 

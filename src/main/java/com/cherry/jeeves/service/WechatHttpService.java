@@ -194,9 +194,8 @@ public class WechatHttpService {
         return jsonMapper.readValue(responseEntity.getBody(), GetContactResponse.class);
     }
 
-    public VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws IOException, RestClientException {
-        long rnd = System.currentTimeMillis() / 3158L;
-        final String url = String.format(WECHAT_URL_VERIFY_USER, hostUrl, rnd, passTicket);
+    public VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws IOException, URISyntaxException, RestClientException {
+        final String path = String.format(WECHAT_URL_VERIFY_USER, hostUrl);
         VerifyUserRequest request = new VerifyUserRequest();
         request.setBaseRequest(baseRequest);
         request.setOpcode(3);
@@ -206,8 +205,14 @@ public class WechatHttpService {
         request.setVerifyContent("");
         request.setVerifyUserList(verifyUsers);
         request.setVerifyUserListSize(verifyUsers.length);
+
+        URIBuilder builder = new URIBuilder(path);
+        builder.addParameter("r", String.valueOf(System.currentTimeMillis()));
+        builder.addParameter("pass_ticket", passTicket);
+        final URI uri = builder.build().toURL().toURI();
+
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), VerifyUserResponse.class);
     }
 
@@ -284,14 +289,14 @@ public class WechatHttpService {
         return jsonMapper.readValue(responseEntity.getBody(), SyncResponse.class);
     }
 
-    public StatusNotifyResponse statusNotify(String hostUrl, String passTicket, BaseRequest baseRequest, String userName) throws IOException, RestClientException {
+    public StatusNotifyResponse statusNotify(String hostUrl, String passTicket, BaseRequest baseRequest, String userName, int code) throws IOException, RestClientException {
         String rnd = String.valueOf(System.currentTimeMillis());
         final String url = String.format(WECHAT_URL_STATUS_NOTIFY, hostUrl, passTicket);
         StatusNotifyRequest request = new StatusNotifyRequest();
         request.setBaseRequest(baseRequest);
         request.setFromUserName(userName);
         request.setToUserName(userName);
-        request.setCode(3);
+        request.setCode(code);
         request.setClientMsgId(rnd);
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);

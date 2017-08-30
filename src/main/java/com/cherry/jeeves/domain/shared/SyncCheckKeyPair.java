@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SyncCheckKeyPair {
     @JsonProperty
     private int Key;
-    @JsonProperty private String Val;
+    @JsonProperty
+    private String Val;
 
     public int getKey() {
         return Key;
