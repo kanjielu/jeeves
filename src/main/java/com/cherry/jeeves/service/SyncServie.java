@@ -1,6 +1,8 @@
 package com.cherry.jeeves.service;
 
-import com.cherry.jeeves.domain.response.*;
+import com.cherry.jeeves.domain.response.SyncCheckResponse;
+import com.cherry.jeeves.domain.response.SyncResponse;
+import com.cherry.jeeves.domain.response.VerifyUserResponse;
 import com.cherry.jeeves.domain.shared.Message;
 import com.cherry.jeeves.domain.shared.VerifyUser;
 import com.cherry.jeeves.enums.MessageType;
@@ -25,6 +27,8 @@ public class SyncServie {
     private CacheService cacheService;
     @Autowired
     private WechatHttpService wechatHttpService;
+    @Autowired(required = false)
+    private MessageHandler messageHandler;
 
     public void listen() throws IOException, URISyntaxException {
         SyncCheckResponse syncCheckResponse = wechatHttpService.syncCheck(cacheService.getSyncUrl(), cacheService.getBaseRequest(), cacheService.getSyncKey());
@@ -32,11 +36,49 @@ public class SyncServie {
         int selector = syncCheckResponse.getSelector();
         logger.info(String.format("[SYNCCHECK] retcode = %s, selector = %s", retCode, selector));
         if (retCode == RetCode.NORMAL.getCode()) {
+            //有新消息
             if (selector == Selector.NEW_MESSAGE.getCode()) {
                 SyncResponse syncResponse = sync();
-                onChatRoomMessageReceived(syncResponse.getAddMsgList());
-                onPrivateMessageReceived(syncResponse.getAddMsgList());
-                onFriendInvitationRecevied(syncResponse.getAddMsgList());
+                for (Message message : syncResponse.getAddMsgList()) {
+                    //私信
+                    if (message.getFromUserName() != null && message.getFromUserName().startsWith("@") && message.getMsgType() == MessageType.TEXT.getCode()) {
+                        logger.info("[*] private message:");
+                        logger.info("[*] from: " + message.getFromUserName());
+                        logger.info("[*] to: " + message.getToUserName());
+                        logger.info("[*] content:" + WechatUtils.textDecode(message.getContent()));
+                        if (messageHandler != null) {
+                            messageHandler.handlePrivateMessage(message);
+                        }
+                    }
+                    //群聊
+                    else if (message.getFromUserName() != null && message.getFromUserName().startsWith("@@") && message.getMsgType() == MessageType.TEXT.getCode()) {
+                        logger.info("[*] chatroom message:");
+                        logger.info("[*] from chatroom: " + message.getFromUserName());
+                        logger.info("[*] from person: " + MessageUtils.getSenderOfChatRoomTextMessage(message.getContent()));
+                        logger.info("[*] to: " + message.getToUserName());
+                        logger.info("[*] content:" + WechatUtils.textDecode(MessageUtils.getChatRoomTextMessageContent(message.getContent())));
+                        if (messageHandler != null) {
+                            messageHandler.handleChatRoomMessage(message);
+                        }
+                    }
+                    //好友邀请
+                    else if (message.getMsgType() == MessageType.FRIEND_REQUEST.getCode() && cacheService.getOwner().getUserName().equals(message.getToUserName())) {
+                        logger.info("[*] friend invitation message:");
+                        logger.info("[*] from: " + message.getFromUserName());
+                        logger.info("[*] to: " + message.getToUserName());
+                        logger.info("[*] recommendinfo content:" + WechatUtils.textDecode(message.getRecommendInfo().getContent()));
+                        if (messageHandler != null) {
+                            if (messageHandler.handleFriendInvitation(message.getRecommendInfo())) {
+                                onFriendInvitationAccepted(message);
+                                logger.info("[*] you've accepted the invitation");
+                                messageHandler.postAcceptFriendInvitation(message.getRecommendInfo());
+                            } else {
+                                logger.info("[*] you've declined the invitation");
+                                //TODO decline invitation
+                            }
+                        }
+                    }
+                }
             } else if (selector == Selector.ENTER_LEAVE_CHAT.getCode()) {
                 sync();
             } else if (selector == Selector.CONTACT_UPDATED.getCode()) {
@@ -65,73 +107,19 @@ public class SyncServie {
         return syncResponse;
     }
 
-    private void onChatRoomMessageReceived(Message[] messages) {
-        for (int i = 0; i < messages.length; i++) {
-            Message message = messages[i];
-            if (message.getFromUserName() != null && message.getFromUserName().startsWith("@@") && message.getMsgType() == MessageType.TEXT.getCode()) {
-                logger.info("[*] chatroom message:");
-                logger.info("[*] from chatroom: " + message.getFromUserName());
-                logger.info("[*] from person: " + MessageUtils.getSenderOfChatRoomTextMessage(message.getContent()));
-                logger.info("[*] to: " + message.getToUserName());
-                logger.info("[*] content:" + WechatUtils.textDecode(MessageUtils.getChatRoomTextMessageContent(message.getContent())));
-            }
-        }
-    }
-
-    private void onPrivateMessageReceived(Message[] messages) throws IOException {
-        for (int i = 0; i < messages.length; i++) {
-            Message message = messages[i];
-            if (message.getFromUserName() != null && message.getFromUserName().startsWith("@") && message.getMsgType() == MessageType.TEXT.getCode()) {
-                logger.info("[*] private message:");
-                logger.info("[*] from: " + message.getFromUserName());
-                logger.info("[*] to: " + message.getToUserName());
-                logger.info("[*] content:" + WechatUtils.textDecode(message.getContent()));
-                sendMessageBack(message.getFromUserName(), "你好");
-                setAlias(message.getFromUserName(), WechatUtils.textDecode(message.getContent()));
-            }
-        }
-    }
-
-    private void onFriendInvitationRecevied(Message[] messages) throws IOException, URISyntaxException {
-        for (int i = 0; i < messages.length; i++) {
-            Message message = messages[i];
-            if (message.getMsgType() == MessageType.FRIEND_REQUEST.getCode() && cacheService.getOwner().getUserName().equals(message.getToUserName())) {
-                logger.info("[*] friend invitation message:");
-                logger.info("[*] from: " + message.getFromUserName());
-                logger.info("[*] to: " + message.getToUserName());
-                logger.info("[*] recommendinfo content:" + WechatUtils.textDecode(message.getRecommendInfo().getContent()));
-                VerifyUser user = new VerifyUser();
-                user.setValue(message.getRecommendInfo().getUserName());
-                user.setVerifyUserTicket(message.getRecommendInfo().getTicket());
-                VerifyUserResponse verifyUserResponse = wechatHttpService.acceptFriend(
-                        cacheService.getHostUrl(),
-                        cacheService.getBaseRequest(),
-                        cacheService.getPassTicket(),
-                        new VerifyUser[]{user}
-                );
-                if (!WechatUtils.checkBaseResponse(verifyUserResponse.getBaseResponse())) {
-                    throw new WechatException("verifyUserResponse ret = " + verifyUserResponse.getBaseResponse().getRet());
-                }
-                sync();
-            }
-        }
-    }
-
-    private void sendMessageBack(String userName, String content) throws IOException {
-        SendMsgResponse response = wechatHttpService.sendTextMsg(
+    private void onFriendInvitationAccepted(Message message) throws IOException, URISyntaxException {
+        VerifyUser user = new VerifyUser();
+        user.setValue(message.getRecommendInfo().getUserName());
+        user.setVerifyUserTicket(message.getRecommendInfo().getTicket());
+        VerifyUserResponse verifyUserResponse = wechatHttpService.acceptFriend(
                 cacheService.getHostUrl(),
                 cacheService.getBaseRequest(),
-                content,
-                cacheService.getOwner().getUserName(),
-                userName);
-    }
-
-    private void setAlias(String userName, String alias) throws IOException {
-        OpLogResponse response = wechatHttpService.setAlias(
-                cacheService.getHostUrl(),
                 cacheService.getPassTicket(),
-                cacheService.getBaseRequest(),
-                alias,
-                userName);
+                new VerifyUser[]{user}
+        );
+        if (!WechatUtils.checkBaseResponse(verifyUserResponse.getBaseResponse())) {
+            throw new WechatException("verifyUserResponse ret = " + verifyUserResponse.getBaseResponse().getRet());
+        }
+        sync();
     }
 }

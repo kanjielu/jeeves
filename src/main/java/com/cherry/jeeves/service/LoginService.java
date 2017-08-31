@@ -6,15 +6,17 @@ import com.cherry.jeeves.domain.shared.ChatRoomDescription;
 import com.cherry.jeeves.domain.shared.Token;
 import com.cherry.jeeves.enums.LoginCode;
 import com.cherry.jeeves.exception.WechatException;
+import com.cherry.jeeves.utils.QRCodeUtils;
 import com.cherry.jeeves.utils.WechatUtils;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Random;
@@ -39,13 +41,11 @@ public class LoginService {
             logger.info("[1] uuid completed");
             //2 qr
             byte[] qrData = wechatHttpService.getQR(uuid);
-            String path = "E://qr//qr.jpg";
-            OutputStream out = new FileOutputStream(path);
-            out.write(qrData);
-            out.flush();
-            out.close();
-            Runtime runtime = Runtime.getRuntime();
-            runtime.exec("cmd /c start " + path);
+            ByteArrayInputStream stream = new ByteArrayInputStream(qrData);
+            String qrUrl = QRCodeUtils.decode(stream);
+            stream.close();
+            String qr = QRCodeUtils.generateQR(qrUrl, 40, 40);
+            System.out.println(qr);
             logger.info("[2] qrcode completed");
             //3 login
             LoginResult loginResponse = null;
@@ -146,6 +146,10 @@ public class LoginService {
             logger.info("[-] login process completed");
             startReceiving();
         } catch (IOException ex) {
+            throw new WechatException(ex);
+        } catch (NotFoundException ex) {
+            throw new WechatException(ex);
+        } catch (WriterException ex) {
             throw new WechatException(ex);
         }
     }
