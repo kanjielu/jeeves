@@ -154,7 +154,6 @@ public class LoginService {
         }
     }
 
-
     private void startReceiving() {
         new Thread(() -> {
             while (cacheService.isAlive()) {

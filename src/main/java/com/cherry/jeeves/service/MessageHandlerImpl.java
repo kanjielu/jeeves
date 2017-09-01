@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Component
-public class MessageHandlerImpl implements MessageHandler {
+public class MessageHandlerImpl extends DefaultMessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageHandlerImpl.class);
     @Autowired
@@ -25,31 +25,30 @@ public class MessageHandlerImpl implements MessageHandler {
 
     @Override
     public void handleChatRoomMessage(Message message) throws IOException {
-
+        super.handleChatRoomMessage(message);
     }
 
     @Override
     public void handlePrivateMessage(Message message) throws IOException {
-        SendMsgResponse sendMsgResponse = sendMessage(message.getFromUserName(), "hello");
-        if (!WechatUtils.checkBaseResponse(sendMsgResponse.getBaseResponse())) {
-            throw new WechatException("sendMsgResponse ret = " + sendMsgResponse.getBaseResponse().getRet());
-        }
+        super.handlePrivateMessage(message);
+        replyMessage(message);
     }
 
     @Override
     public boolean handleFriendInvitation(RecommendInfo info) throws IOException {
+        super.handleFriendInvitation(info);
         return true;
     }
 
     @Override
     public void postAcceptFriendInvitation(RecommendInfo info) throws IOException {
+        super.postAcceptFriendInvitation(info);
         UUID uuid = UUID.randomUUID();
         OpLogResponse opLogResponse = setAlias(info.getUserName(), uuid.toString());
         if (!WechatUtils.checkBaseResponse(opLogResponse.getBaseResponse())) {
             throw new WechatException("opLogResponse ret = " + opLogResponse.getBaseResponse().getRet());
         }
     }
-
 
     private SendMsgResponse sendMessage(String userName, String content) throws IOException {
         return wechatHttpService.sendTextMsg(
@@ -67,5 +66,12 @@ public class MessageHandlerImpl implements MessageHandler {
                 cacheService.getBaseRequest(),
                 alias,
                 userName);
+    }
+
+    private void replyMessage(Message message) throws IOException {
+        SendMsgResponse sendMsgResponse = sendMessage(message.getFromUserName(), WechatUtils.textDecode(message.getContent()));
+        if (!WechatUtils.checkBaseResponse(sendMsgResponse.getBaseResponse())) {
+            throw new WechatException("sendMsgResponse ret = " + sendMsgResponse.getBaseResponse().getRet());
+        }
     }
 }
