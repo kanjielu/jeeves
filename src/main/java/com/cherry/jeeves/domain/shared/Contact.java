@@ -145,4 +145,17 @@ public class Contact extends Member {
     public void setOwnerUin(int ownerUin) {
         OwnerUin = ownerUin;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Contact contact = (Contact) o;
+        return this.getUserName().equals(contact.getUserName());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getUserName().hashCode();
+    }
 }

@@ -26,7 +26,7 @@ public class CacheService {
         this.uuid = null;
         this.uin = null;
         this.sid = null;
-        this.contacts.clear();
+        this.individuals.clear();
         this.mediaPlatforms.clear();
         this.chatRooms.clear();
     }
@@ -45,7 +45,7 @@ public class CacheService {
     private String uin;
     private String sid;
 
-    private Set<Contact> contacts = new HashSet<>();
+    private Set<Contact> individuals = new HashSet<>();
     private Set<Contact> mediaPlatforms = new HashSet<>();
     private Set<Contact> chatRooms = new HashSet<>();
 
@@ -137,8 +137,8 @@ public class CacheService {
         this.sid = sid;
     }
 
-    public Set<Contact> getContacts() {
-        return contacts;
+    public Set<Contact> getIndividuals() {
+        return individuals;
     }
 
     public Set<Contact> getMediaPlatforms() {
@@ -157,8 +157,8 @@ public class CacheService {
         this.syncUrl = syncUrl;
     }
 
-    public void setContacts(Set<Contact> contacts) {
-        this.contacts = contacts;
+    public void setIndividuals(Set<Contact> individuals) {
+        this.individuals = individuals;
     }
 
     public void setMediaPlatforms(Set<Contact> mediaPlatforms) {

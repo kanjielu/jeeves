@@ -3,6 +3,7 @@ package com.cherry.jeeves.service;
 import com.cherry.jeeves.domain.response.SyncCheckResponse;
 import com.cherry.jeeves.domain.response.SyncResponse;
 import com.cherry.jeeves.domain.response.VerifyUserResponse;
+import com.cherry.jeeves.domain.shared.Contact;
 import com.cherry.jeeves.domain.shared.Message;
 import com.cherry.jeeves.domain.shared.RecommendInfo;
 import com.cherry.jeeves.domain.shared.VerifyUser;
@@ -96,6 +97,32 @@ public class SyncServie {
         logger.info("[SYNC] delcontactcount: " + syncResponse.getDelContactCount());
         logger.info("[SYNC] getmodchatroommembercount: " + syncResponse.getModChatRoomMemberCount());
         logger.info("[SYNC] getmodcontactcount: " + syncResponse.getModContactCount());
+        //mod包含新增和修改
+        if (syncResponse.getModContactCount() > 0) {
+            for (Contact contact : syncResponse.getModContactList()) {
+                if (WechatUtils.isIndividual(contact)) {
+                    cacheService.getIndividuals().remove(contact);
+                    cacheService.getIndividuals().add(contact);
+                } else if (WechatUtils.isChatRoom(contact)) {
+                    cacheService.getChatRooms().remove(contact);
+                    cacheService.getChatRooms().add(contact);
+                } else if (WechatUtils.isMediaPlatform(contact)) {
+                    cacheService.getMediaPlatforms().remove(contact);
+                    cacheService.getMediaPlatforms().add(contact);
+                }
+            }
+        }
+        if (syncResponse.getDelContactCount() > 0) {
+            for (Contact contact : syncResponse.getDelContactList()) {
+                if (WechatUtils.isIndividual(contact)) {
+                    cacheService.getIndividuals().remove(contact);
+                } else if (WechatUtils.isChatRoom(contact)) {
+                    cacheService.getChatRooms().remove(contact);
+                } else if (WechatUtils.isMediaPlatform(contact)) {
+                    cacheService.getMediaPlatforms().remove(contact);
+                }
+            }
+        }
         return syncResponse;
     }
 
@@ -112,6 +139,5 @@ public class SyncServie {
         if (!WechatUtils.checkBaseResponse(verifyUserResponse.getBaseResponse())) {
             throw new WechatException("verifyUserResponse ret = " + verifyUserResponse.getBaseResponse().getRet());
         }
-        sync();
     }
 }

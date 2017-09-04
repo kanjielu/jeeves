@@ -27,7 +27,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -104,13 +103,14 @@ public class WechatHttpService {
     public String getUUID() throws RestClientException {
         final String regEx = "window.QRLogin.code = (\\d+); window.QRLogin.uuid = \"(\\S+?)\";";
         final String url = String.format(WECHAT_URL_UUID, System.currentTimeMillis());
+        final String successCode = "200";
         ResponseEntity<String> responseEntity
                 = redirectableRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
         String body = responseEntity.getBody();
 
         Matcher matcher = Pattern.compile(regEx).matcher(body);
         if (matcher.find()) {
-            if ("200".equals(matcher.group(1))) {
+            if (successCode.equals(matcher.group(1))) {
                 return matcher.group(2);
             }
         }
@@ -162,8 +162,8 @@ public class WechatHttpService {
         builder.addParameter("skey", baseRequest.getSkey());
         builder.addParameter("deviceid", baseRequest.getDeviceID());
         builder.addParameter("synckey", syncKey.toString());
-        builder.addParameter("r", String.valueOf(new Date().getTime()));
-        builder.addParameter("_", String.valueOf(new Date().getTime()));
+        builder.addParameter("r", String.valueOf(System.currentTimeMillis()));
+        builder.addParameter("_", String.valueOf(System.currentTimeMillis()));
         final URI uri = builder.build().toURL().toURI();
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(header), String.class);
@@ -180,7 +180,7 @@ public class WechatHttpService {
     }
 
     public GetContactResponse getContact(String hostUrl, BaseRequest baseRequest, long seq) throws IOException, RestClientException {
-        long rnd = new Date().getTime();
+        long rnd = System.currentTimeMillis();
         final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, seq, escape(baseRequest.getSkey()));
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
@@ -188,12 +188,14 @@ public class WechatHttpService {
     }
 
     public VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws IOException, URISyntaxException, RestClientException {
+        final int opCode = 3;
+        final int[] sceneList = new int[]{33};
         final String path = String.format(WECHAT_URL_VERIFY_USER, hostUrl);
         VerifyUserRequest request = new VerifyUserRequest();
         request.setBaseRequest(baseRequest);
-        request.setOpcode(3);
-        request.setSceneList(new int[]{33});
-        request.setSceneListCount(1);
+        request.setOpcode(opCode);
+        request.setSceneList(sceneList);
+        request.setSceneListCount(sceneList.length);
         request.setSkey(baseRequest.getSkey());
         request.setVerifyContent("");
         request.setVerifyUserList(verifyUsers);
@@ -214,11 +216,12 @@ public class WechatHttpService {
     }
 
     public SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws IOException, RestClientException {
-        final String rnd = String.valueOf(new Date().getTime() * 10);
+        final int scene = 0;
+        final String rnd = String.valueOf(System.currentTimeMillis() * 10);
         final String url = String.format(WECHAT_URL_SEND_MSG, hostUrl);
         SendMsgRequest request = new SendMsgRequest();
         request.setBaseRequest(baseRequest);
-        request.setScene(0);
+        request.setScene(scene);
         BaseMsg msg = new BaseMsg();
         msg.setType(MessageType.TEXT.getCode());
         msg.setClientMsgId(rnd);
@@ -237,10 +240,11 @@ public class WechatHttpService {
     }
 
     public OpLogResponse setAlias(String hostUrl, String passTicket, BaseRequest baseRequest, String newAlias, String userName) throws IOException, RestClientException {
+        final int cmdId = 2;
         final String url = String.format(WECHAT_URL_OP_LOG, hostUrl, passTicket);
         OpLogRequest request = new OpLogRequest();
         request.setBaseRequest(baseRequest);
-        request.setCmdId(2);
+        request.setCmdId(cmdId);
         request.setRemarkName(newAlias);
         request.setUserName(userName);
         ResponseEntity<String> responseEntity
@@ -249,7 +253,7 @@ public class WechatHttpService {
     }
 
     public BatchGetContactResponse batchGetContact(String hostUrl, BaseRequest baseRequest, String passTicket, ChatRoomDescription[] list) throws IOException, RestClientException {
-        long rnd = new Date().getTime();
+        long rnd = System.currentTimeMillis();
         String url = String.format(WECHAT_URL_BATCH_GET_CONTACT, hostUrl, rnd, passTicket);
         BatchGetContactRequest request = new BatchGetContactRequest();
         request.setBaseRequest(baseRequest);
@@ -275,7 +279,7 @@ public class WechatHttpService {
         final String url = String.format(WECHAT_URL_SYNC, hostUrl, baseRequest.getSid(), escape(baseRequest.getSkey()), passTicket);
         SyncRequest request = new SyncRequest();
         request.setBaseRequest(baseRequest);
-        request.setRr(-new Date().getTime() / 1000);
+        request.setRr(-System.currentTimeMillis() / 1000);
         request.setSyncKey(syncKey);
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);

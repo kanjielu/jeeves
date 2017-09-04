@@ -3,7 +3,6 @@ package com.cherry.jeeves.service;
 import com.cherry.jeeves.domain.request.component.BaseRequest;
 import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.ChatRoomDescription;
-import com.cherry.jeeves.domain.shared.Member;
 import com.cherry.jeeves.domain.shared.Token;
 import com.cherry.jeeves.enums.LoginCode;
 import com.cherry.jeeves.exception.WechatException;
@@ -60,8 +59,13 @@ public class LoginService {
                         throw new WechatException("redirectUrl can't be found");
                     }
                     cacheService.setHostUrl(loginResponse.getHostUrl());
-                    cacheService.setSyncUrl(loginResponse.getHostUrl().replaceFirst("^https://", "https://webpush."));
-                    cacheService.setFileUrl(loginResponse.getHostUrl().replaceFirst("^https://", "https://file."));
+                    if (loginResponse.getHostUrl().equals("https://wechat.com")) {
+                        cacheService.setSyncUrl("https://webpush.web.wechat.com");
+                        cacheService.setFileUrl("https://file.web.wechat.com");
+                    } else {
+                        cacheService.setSyncUrl(loginResponse.getHostUrl().replaceFirst("^https://", "https://webpush."));
+                        cacheService.setFileUrl(loginResponse.getHostUrl().replaceFirst("^https://", "https://file."));
+                    }
                     break;
                 } else {
                     logger.info("[*] login status = " + loginResponse.getCode());
@@ -114,18 +118,17 @@ public class LoginService {
                     logger.info("[*] getContactResponse seq = " + getContactResponse.getSeq());
                     logger.info("[*] getContactResponse memberCount = " + getContactResponse.getMemberCount());
                     seq = getContactResponse.getSeq();
-                    cacheService.getContacts().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(x -> (x.getVerifyFlag() & 8) == 0).collect(Collectors.toSet()));
-                    cacheService.getMediaPlatforms().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(x -> (x.getVerifyFlag() & 8) > 0).collect(Collectors.toSet()));
+                    cacheService.getIndividuals().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isIndividual).collect(Collectors.toSet()));
+                    cacheService.getMediaPlatforms().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isMediaPlatform).collect(Collectors.toSet()));
                 }
             } while (seq > 0);
             logger.info("[7] get contact completed");
             //8 batch get contact
             ChatRoomDescription[] chatRoomDescriptions = Arrays.stream(initResponse.getContactList())
-                    .map(Member::getUserName)
-                    .filter(x -> x != null && x.startsWith("@@"))
+                    .filter(x -> x != null && WechatUtils.isChatRoom(x))
                     .map(x -> {
                         ChatRoomDescription description = new ChatRoomDescription();
-                        description.setUserName(x);
+                        description.setUserName(x.getUserName());
                         return description;
                     })
                     .toArray(ChatRoomDescription[]::new);
