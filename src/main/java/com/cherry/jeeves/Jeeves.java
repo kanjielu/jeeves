@@ -13,11 +13,14 @@ public class Jeeves {
     private LoginService loginService;
     @Value("${wechat.url.login}")
     private String url;
+    @Value("${instance.id}")
+    private String instanceId;
 
     private static final Logger logger = LoggerFactory.getLogger(LoginService.class);
 
     public void start() {
         logger.info("Jeeves starts");
+        logger.info("Jeeves id = " + instanceId);
         System.setProperty("jsse.enableSNIExtension", "false");
         loginService.login();
     }
