@@ -14,7 +14,7 @@ public enum ContactFlag {
     NOTIFYCLOSECONTACT(512),
     TOPCONTACT(2048);
 
-    private int code;
+    private final int code;
 
     ContactFlag(int code) {
         this.code = code;

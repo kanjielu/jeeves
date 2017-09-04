@@ -3,6 +3,7 @@ package com.cherry.jeeves.service;
 import com.cherry.jeeves.domain.request.component.BaseRequest;
 import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.ChatRoomDescription;
+import com.cherry.jeeves.domain.shared.Member;
 import com.cherry.jeeves.domain.shared.Token;
 import com.cherry.jeeves.enums.LoginCode;
 import com.cherry.jeeves.exception.WechatException;
@@ -45,10 +46,10 @@ public class LoginService {
             String qrUrl = QRCodeUtils.decode(stream);
             stream.close();
             String qr = QRCodeUtils.generateQR(qrUrl, 40, 40);
-            System.out.println(qr);
+            logger.info(qr);
             logger.info("[2] qrcode completed");
             //3 login
-            LoginResult loginResponse = null;
+            LoginResult loginResponse;
             while (true) {
                 loginResponse = wechatHttpService.login(uuid);
                 if (LoginCode.SUCCESS.getCode().equals(loginResponse.getCode())) {
@@ -120,7 +121,7 @@ public class LoginService {
             logger.info("[7] get contact completed");
             //8 batch get contact
             ChatRoomDescription[] chatRoomDescriptions = Arrays.stream(initResponse.getContactList())
-                    .map(x -> x.getUserName())
+                    .map(Member::getUserName)
                     .filter(x -> x != null && x.startsWith("@@"))
                     .map(x -> {
                         ChatRoomDescription description = new ChatRoomDescription();
@@ -145,11 +146,7 @@ public class LoginService {
             cacheService.setAlive(true);
             logger.info("[-] login process completed");
             startReceiving();
-        } catch (IOException ex) {
-            throw new WechatException(ex);
-        } catch (NotFoundException ex) {
-            throw new WechatException(ex);
-        } catch (WriterException ex) {
+        } catch (IOException | NotFoundException | WriterException ex) {
             throw new WechatException(ex);
         }
     }
@@ -159,9 +156,7 @@ public class LoginService {
             while (cacheService.isAlive()) {
                 try {
                     syncServie.listen();
-                } catch (IOException ex) {
-                    logger.error(ex.getMessage(), ex);
-                } catch (URISyntaxException ex) {
+                } catch (IOException | URISyntaxException ex) {
                     logger.error(ex.getMessage(), ex);
                 }
             }

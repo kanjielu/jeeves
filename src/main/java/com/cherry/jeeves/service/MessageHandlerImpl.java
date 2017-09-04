@@ -27,11 +27,6 @@ public class MessageHandlerImpl extends DefaultMessageHandler {
     private WechatHttpService wechatHttpService;
 
     @Override
-    public void handleChatRoomMessage(Message message) throws IOException {
-        super.handleChatRoomMessage(message);
-    }
-
-    @Override
     public void handlePrivateMessage(Message message) throws IOException {
         super.handlePrivateMessage(message);
         replyMessage(message);

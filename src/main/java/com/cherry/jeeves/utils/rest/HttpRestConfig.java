@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class HttpRestConfig {
 
-    private CookieStore cookieStore = new BasicCookieStore();
+    private final CookieStore cookieStore = new BasicCookieStore();
 
     @Bean
     public RestTemplate restTemplate() {

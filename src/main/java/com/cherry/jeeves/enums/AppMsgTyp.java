@@ -20,7 +20,7 @@ public enum AppMsgTyp {
     RED_ENVELOPES(2001),
     READER_TYPE(100001);
 
-    private int code;
+    private final int code;
 
     AppMsgTyp(int code) {
         this.code = code;

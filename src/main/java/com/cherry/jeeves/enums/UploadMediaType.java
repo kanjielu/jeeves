@@ -6,7 +6,7 @@ public enum UploadMediaType {
     AUDIO(3),
     ATTACHMENT(4);
 
-    private int code;
+    private final int code;
 
     UploadMediaType(int code) {
         this.code = code;

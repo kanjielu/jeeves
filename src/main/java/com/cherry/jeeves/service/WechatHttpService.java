@@ -117,13 +117,6 @@ public class WechatHttpService {
         throw new WechatException("uuid can't be found");
     }
 
-    /**
-     * Login Request
-     *
-     * @param uuid uuid
-     * @return code in the response - 200: Success; 201: Await for confirmation on mobile; 408: Await to scan QR
-     * @throws RestClientException
-     */
     public LoginResult login(String uuid) throws WechatException, RestClientException {
         final Pattern pattern = Pattern.compile("window.code=(\\d+)");
         Pattern hostUrlPattern = Pattern.compile("window.redirect_uri=\\\"(.*)\\/cgi-bin");
@@ -212,7 +205,7 @@ public class WechatHttpService {
         final URI uri = builder.build().toURL().toURI();
 
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), VerifyUserResponse.class);
     }
 
@@ -235,7 +228,7 @@ public class WechatHttpService {
         msg.setLocalID(rnd);
         request.setMsg(msg);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), SendMsgResponse.class);
     }
 
@@ -251,7 +244,7 @@ public class WechatHttpService {
         request.setRemarkName(newAlias);
         request.setUserName(userName);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), OpLogResponse.class);
     }
 
@@ -263,7 +256,7 @@ public class WechatHttpService {
         request.setCount(list.length);
         request.setList(list);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), BatchGetContactResponse.class);
     }
 
@@ -273,7 +266,7 @@ public class WechatHttpService {
         InitRequest request = new InitRequest();
         request.setBaseRequest(baseRequest);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), InitResponse.class);
     }
 
@@ -285,7 +278,7 @@ public class WechatHttpService {
         request.setRr(-new Date().getTime() / 1000);
         request.setSyncKey(syncKey);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), SyncResponse.class);
     }
 
@@ -299,7 +292,7 @@ public class WechatHttpService {
         request.setCode(code);
         request.setClientMsgId(rnd);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity(request, this.header), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), StatusNotifyResponse.class);
     }
 

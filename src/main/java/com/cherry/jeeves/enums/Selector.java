@@ -18,7 +18,7 @@ public enum Selector {
     CONTACT_UPDATED(4),
     ENTER_LEAVE_CHAT(7);
 
-    private int code;
+    private final int code;
 
     public int getCode() {
         return code;

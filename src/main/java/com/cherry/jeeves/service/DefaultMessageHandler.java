@@ -14,7 +14,7 @@ public class DefaultMessageHandler implements MessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMessageHandler.class);
 
     @Override
-    public void handleChatRoomMessage(Message message) throws IOException {
+    public void handleChatRoomMessage(Message message) {
         logger.info("[*] chatroom message:");
         logger.info("[*] from chatroom: " + message.getFromUserName());
         logger.info("[*] from person: " + MessageUtils.getSenderOfChatRoomTextMessage(message.getContent()));

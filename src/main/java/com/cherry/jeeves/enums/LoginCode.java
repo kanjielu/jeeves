@@ -15,7 +15,7 @@ public enum LoginCode {
      */
     AWAIT_SCANNING("408");
 
-    private String code;
+    private final String code;
 
     LoginCode(String code) {
         this.code = code;

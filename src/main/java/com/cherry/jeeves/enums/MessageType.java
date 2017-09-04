@@ -74,7 +74,7 @@ public enum MessageType {
      */
     WITHDRAW(10002);
 
-    private int code;
+    private final int code;
 
     MessageType(int code) {
         this.code = code;

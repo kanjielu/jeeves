@@ -6,7 +6,7 @@ import com.cherry.jeeves.domain.shared.RecommendInfo;
 import java.io.IOException;
 
 public interface MessageHandler {
-    void handleChatRoomMessage(Message message) throws IOException;
+    void handleChatRoomMessage(Message message);
 
     void handlePrivateMessage(Message message) throws IOException;
 
