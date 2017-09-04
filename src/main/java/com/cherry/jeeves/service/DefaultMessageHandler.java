@@ -38,7 +38,7 @@ public class DefaultMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void postAcceptFriendInvitation(RecommendInfo info) throws IOException {
+    public void postAcceptFriendInvitation(Message message) throws IOException {
 
     }
 }

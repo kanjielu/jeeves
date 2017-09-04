@@ -12,5 +12,5 @@ public interface MessageHandler {
 
     boolean handleFriendInvitation(RecommendInfo info) throws IOException;
 
-    void postAcceptFriendInvitation(RecommendInfo info) throws IOException;
+    void postAcceptFriendInvitation(Message message) throws IOException;
 }

@@ -65,7 +65,7 @@ public class SyncServie {
                             if (messageHandler.handleFriendInvitation(message.getRecommendInfo())) {
                                 acceptFriendInvitation(message.getRecommendInfo());
                                 logger.info("[*] you've accepted the invitation");
-                                messageHandler.postAcceptFriendInvitation(message.getRecommendInfo());
+                                messageHandler.postAcceptFriendInvitation(message);
                             } else {
                                 logger.info("[*] you've declined the invitation");
                                 //TODO decline invitation

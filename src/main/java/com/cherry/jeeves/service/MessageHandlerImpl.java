@@ -2,17 +2,20 @@ package com.cherry.jeeves.service;
 
 import com.cherry.jeeves.domain.response.OpLogResponse;
 import com.cherry.jeeves.domain.response.SendMsgResponse;
+import com.cherry.jeeves.domain.shared.FriendInvitationContent;
 import com.cherry.jeeves.domain.shared.Message;
 import com.cherry.jeeves.domain.shared.RecommendInfo;
 import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.utils.WechatUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @Component
 public class MessageHandlerImpl extends DefaultMessageHandler {
@@ -41,10 +44,12 @@ public class MessageHandlerImpl extends DefaultMessageHandler {
     }
 
     @Override
-    public void postAcceptFriendInvitation(RecommendInfo info) throws IOException {
-        super.postAcceptFriendInvitation(info);
-        UUID uuid = UUID.randomUUID();
-        OpLogResponse opLogResponse = setAlias(info.getUserName(), uuid.toString());
+    public void postAcceptFriendInvitation(Message message) throws IOException {
+        super.postAcceptFriendInvitation(message);
+        String content = StringEscapeUtils.unescapeXml(message.getContent());
+        ObjectMapper xmlMapper = new XmlMapper();
+        FriendInvitationContent friendInvitationContent = xmlMapper.readValue(content, FriendInvitationContent.class);
+        OpLogResponse opLogResponse = setAlias(message.getRecommendInfo().getUserName(), friendInvitationContent.getFromusername());
         if (!WechatUtils.checkBaseResponse(opLogResponse.getBaseResponse())) {
             throw new WechatException("opLogResponse ret = " + opLogResponse.getBaseResponse().getRet());
         }
