@@ -1,0 +1,16 @@
+language: java
+jdk: oraclejdk8
+
+sudo: required
+
+install: true
+script: ./mvnw clean install
+
+# Code coverage
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+# cache between builds
+cache:
+  directories:
+  - $HOME/.m2
