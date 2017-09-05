@@ -6,6 +6,7 @@ import com.cherry.jeeves.domain.shared.ChatRoomDescription;
 import com.cherry.jeeves.domain.shared.Token;
 import com.cherry.jeeves.enums.LoginCode;
 import com.cherry.jeeves.exception.WechatException;
+import com.cherry.jeeves.exception.WechatQRExpiredException;
 import com.cherry.jeeves.utils.QRCodeUtils;
 import com.cherry.jeeves.utils.WechatUtils;
 import com.google.zxing.NotFoundException;
@@ -13,11 +14,11 @@ import com.google.zxing.WriterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -29,9 +30,10 @@ public class LoginService {
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private SyncServie syncServie;
-    @Autowired
     private WechatHttpService wechatHttpService;
+
+    @Value("${auto-relogin-when-qrcode-expired}")
+    private boolean AUTO_RELOGIN_WHEN_QRCODE_EXPIRED;
 
     public void login() {
         try {
@@ -67,6 +69,13 @@ public class LoginService {
                         cacheService.setFileUrl(loginResponse.getHostUrl().replaceFirst("^https://", "https://file."));
                     }
                     break;
+                } else if (LoginCode.AWAIT_CONFIRMATION.getCode().equals(loginResponse.getCode())) {
+                    logger.info("[*] login status = AWAIT_CONFIRMATION");
+                } else if (LoginCode.AWAIT_SCANNING.getCode().equals(loginResponse.getCode())) {
+                    logger.info("[*] login status = AWAIT_SCANNING");
+                } else if (LoginCode.EXPIRED.getCode().equals(loginResponse.getCode())) {
+                    logger.info("[*] login status = EXPIRED");
+                    throw new WechatQRExpiredException();
                 } else {
                     logger.info("[*] login status = " + loginResponse.getCode());
                 }
@@ -148,21 +157,14 @@ public class LoginService {
             logger.info("[8] batch get contact completed");
             cacheService.setAlive(true);
             logger.info("[-] login process completed");
-            startReceiving();
         } catch (IOException | NotFoundException | WriterException ex) {
             throw new WechatException(ex);
-        }
-    }
-
-    private void startReceiving() {
-        new Thread(() -> {
-            while (cacheService.isAlive()) {
-                try {
-                    syncServie.listen();
-                } catch (IOException | URISyntaxException ex) {
-                    logger.error(ex.getMessage(), ex);
-                }
+        } catch (WechatQRExpiredException ex) {
+            if (AUTO_RELOGIN_WHEN_QRCODE_EXPIRED) {
+                login();
+            } else {
+                throw new WechatException(ex);
             }
-        }).start();
+        }
     }
 }

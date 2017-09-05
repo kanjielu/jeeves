@@ -78,6 +78,8 @@ public class SyncServie {
                 sync();
             } else if (selector == Selector.CONTACT_UPDATED.getCode()) {
                 sync();
+            } else if (selector == Selector.UNKNOWN6.getCode()) {
+                sync();
             } else if (selector != Selector.NORMAL.getCode()) {
                 throw new WechatException("syncCheckResponse ret = " + retCode);
             }

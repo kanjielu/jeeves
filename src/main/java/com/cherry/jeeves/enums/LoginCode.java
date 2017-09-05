@@ -11,6 +11,10 @@ public enum LoginCode {
      */
     AWAIT_CONFIRMATION("201"),
     /**
+     * 二维码超时
+     */
+    EXPIRED("400"),
+    /**
      * 等待扫描二维码
      */
     AWAIT_SCANNING("408");

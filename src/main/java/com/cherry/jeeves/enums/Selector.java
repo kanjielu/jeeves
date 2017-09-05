@@ -16,6 +16,7 @@ public enum Selector {
      * 群聊成员数目变化
      */
     CONTACT_UPDATED(4),
+    UNKNOWN6(6),
     ENTER_LEAVE_CHAT(7);
 
     private final int code;
