@@ -13,7 +13,7 @@ public class Jeeves {
     private LoginService loginService;
     @Value("${wechat.url.login}")
     private String url;
-    @Value("${instance.id}")
+    @Value("${jeeves.instance-id}")
     private String instanceId;
 
     private static final Logger logger = LoggerFactory.getLogger(LoginService.class);

@@ -32,7 +32,7 @@ public class LoginService {
     @Autowired
     private WechatHttpService wechatHttpService;
 
-    @Value("${auto-relogin-when-qrcode-expired}")
+    @Value("${jeeves.auto-relogin-when-qrcode-expired}")
     private boolean AUTO_RELOGIN_WHEN_QRCODE_EXPIRED;
 
     public void login() {
