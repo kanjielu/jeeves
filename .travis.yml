@@ -3,12 +3,6 @@ jdk: oraclejdk8
 
 sudo: required
 
-before_install:
-  - chmod +x mvnw
-
-install: true
-script: ./mvnw clean install
-
 # Code coverage
 after_success:
   - bash <(curl -s https://codecov.io/bash)
