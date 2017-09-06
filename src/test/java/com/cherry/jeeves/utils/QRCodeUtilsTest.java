@@ -7,7 +7,6 @@ public class QRCodeUtilsTest {
     @Test
     public void generateQR() throws Exception {
         final String url = "https://github.com/";
-        String qrcode = QRCodeUtils.generateQR(url, 5, 5);
-        System.out.print(qrcode);
+        QRCodeUtils.generateQR(url, 5, 5);
     }
 }

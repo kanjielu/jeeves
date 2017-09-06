@@ -11,12 +11,4 @@ import java.io.IOException;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class JeevesApplicationTests {
-
-    @Autowired
-    private Jeeves jeeves;
-
-    @Test
-    public void contextLoads() throws IOException {
-        jeeves.start();
-    }
 }
