@@ -8,7 +8,7 @@ before_install:
 
 # Code coverage
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - mvn clean test jacoco:report coveralls:report
 
 # cache between builds
 cache:
