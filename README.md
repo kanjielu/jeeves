@@ -1,7 +1,7 @@
 # jeeves
 
-[![Build Status](https://travis-ci.org/kanjielu/jeeves.svg?branch=dev)](https://travis-ci.org/kanjielu/jeeves)
-[![Coverage Status](https://coveralls.io/repos/github/kanjielu/jeeves/badge.svg?branch=dev)](https://coveralls.io/github/kanjielu/jeeves?branch=dev)
+[![Build Status](https://travis-ci.org/kanjielu/jeeves.svg?branch=master)](https://travis-ci.org/kanjielu/jeeves)
+[![Coverage Status](https://coveralls.io/repos/github/kanjielu/jeeves/badge.svg?branch=master)](https://coveralls.io/github/kanjielu/jeeves?branch=master)
 
 A smart wechat bot.
 
