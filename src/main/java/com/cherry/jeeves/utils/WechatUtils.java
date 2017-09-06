@@ -3,8 +3,6 @@ package com.cherry.jeeves.utils;
 import com.cherry.jeeves.domain.response.component.BaseResponse;
 import com.cherry.jeeves.domain.shared.Contact;
 
-import java.nio.charset.StandardCharsets;
-
 public class WechatUtils {
     public static boolean checkBaseResponse(BaseResponse baseResponse) {
         return baseResponse.getRet() == 0;
@@ -14,7 +12,8 @@ public class WechatUtils {
         if (text == null) {
             throw new IllegalArgumentException("text");
         }
-        return new String(text.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+//        return new String(text.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+        return text;
     }
 
     public static boolean isIndividual(Contact contact) {

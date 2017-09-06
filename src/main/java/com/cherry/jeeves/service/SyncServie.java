@@ -95,10 +95,6 @@ public class SyncServie {
         }
         cacheService.setSyncKey(syncResponse.getSyncKey());
         cacheService.setSyncCheckKey(syncResponse.getSyncCheckKey());
-        logger.info("[SYNC] addmsgcount: " + syncResponse.getAddMsgCount());
-        logger.info("[SYNC] delcontactcount: " + syncResponse.getDelContactCount());
-        logger.info("[SYNC] getmodchatroommembercount: " + syncResponse.getModChatRoomMemberCount());
-        logger.info("[SYNC] getmodcontactcount: " + syncResponse.getModContactCount());
         //mod包含新增和修改
         if (syncResponse.getModContactCount() > 0) {
             for (Contact contact : syncResponse.getModContactList()) {
