@@ -6,6 +6,7 @@ import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.*;
 import com.cherry.jeeves.enums.MessageType;
 import com.cherry.jeeves.exception.WechatException;
+import com.cherry.jeeves.utils.DeviceIdGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.http.client.utils.URIBuilder;
@@ -152,15 +153,15 @@ public class WechatHttpService {
         return xmlMapper.readValue(xmlString, Token.class);
     }
 
-    public SyncCheckResponse syncCheck(String hostUrl, BaseRequest baseRequest, SyncKey syncKey) throws IOException, URISyntaxException, RestClientException {
+    public SyncCheckResponse syncCheck(String hostUrl, String uin, String sid, String skey, SyncKey syncKey) throws IOException, URISyntaxException, RestClientException {
         final Pattern pattern = Pattern.compile("window.synccheck=\\{retcode:\"(\\d+)\",selector:\"(\\d+)\"\\}");
 
         final String path = String.format(WECHAT_URL_SYNC_CHECK, hostUrl);
         URIBuilder builder = new URIBuilder(path);
-        builder.addParameter("uin", baseRequest.getUin());
-        builder.addParameter("sid", baseRequest.getSid());
-        builder.addParameter("skey", baseRequest.getSkey());
-        builder.addParameter("deviceid", baseRequest.getDeviceID());
+        builder.addParameter("uin", uin);
+        builder.addParameter("sid", sid);
+        builder.addParameter("skey", skey);
+        builder.addParameter("deviceid", DeviceIdGenerator.generate());
         builder.addParameter("synckey", syncKey.toString());
         builder.addParameter("r", String.valueOf(System.currentTimeMillis()));
         builder.addParameter("_", String.valueOf(System.currentTimeMillis()));
@@ -179,9 +180,9 @@ public class WechatHttpService {
         }
     }
 
-    public GetContactResponse getContact(String hostUrl, BaseRequest baseRequest, long seq) throws IOException, RestClientException {
+    public GetContactResponse getContact(String hostUrl, String skey, long seq) throws IOException, RestClientException {
         long rnd = System.currentTimeMillis();
-        final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, seq, escape(baseRequest.getSkey()));
+        final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, seq, escape(skey));
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), GetContactResponse.class);

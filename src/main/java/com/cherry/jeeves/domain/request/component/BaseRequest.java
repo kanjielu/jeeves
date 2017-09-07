@@ -1,5 +1,6 @@
 package com.cherry.jeeves.domain.request.component;
 
+import com.cherry.jeeves.utils.DeviceIdGenerator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -39,10 +40,6 @@ public class BaseRequest {
     }
 
     public String getDeviceID() {
-        return DeviceID;
-    }
-
-    public void setDeviceID(String deviceID) {
-        DeviceID = deviceID;
+        return DeviceIdGenerator.generate();
     }
 }

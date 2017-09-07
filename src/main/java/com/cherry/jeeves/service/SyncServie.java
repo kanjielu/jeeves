@@ -39,7 +39,12 @@ public class SyncServie {
     }
 
     public void listen() throws IOException, URISyntaxException {
-        SyncCheckResponse syncCheckResponse = wechatHttpService.syncCheck(cacheService.getSyncUrl(), cacheService.getBaseRequest(), cacheService.getSyncKey());
+        SyncCheckResponse syncCheckResponse = wechatHttpService.syncCheck(
+                cacheService.getSyncUrl(),
+                cacheService.getBaseRequest().getUin(),
+                cacheService.getBaseRequest().getSid(),
+                cacheService.getBaseRequest().getSkey(),
+                cacheService.getSyncKey());
         int retCode = syncCheckResponse.getRetcode();
         int selector = syncCheckResponse.getSelector();
         logger.info(String.format("[SYNCCHECK] retcode = %s, selector = %s", retCode, selector));

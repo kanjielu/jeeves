@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,8 +91,6 @@ public class LoginService {
                 baseRequest.setUin(cacheService.getUin());
                 baseRequest.setSid(cacheService.getSid());
                 baseRequest.setSkey(cacheService.getsKey());
-                String rndDeviceId = "e" + String.valueOf(new Random().nextLong()).substring(1, 16);
-                baseRequest.setDeviceID(rndDeviceId);
                 cacheService.setBaseRequest(baseRequest);
             } else {
                 throw new WechatException("token ret = " + token.getRet());
@@ -120,7 +117,7 @@ public class LoginService {
             //7 get contact
             long seq = 0;
             do {
-                GetContactResponse getContactResponse = wechatHttpService.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), seq);
+                GetContactResponse getContactResponse = wechatHttpService.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest().getSkey(), seq);
                 if (!WechatUtils.checkBaseResponse(getContactResponse.getBaseResponse())) {
                     throw new WechatException("getContactResponse ret = " + getContactResponse.getBaseResponse().getRet());
                 } else {
