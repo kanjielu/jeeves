@@ -61,7 +61,7 @@ public class SyncServie {
                         }
                     }
                     //好友邀请
-                    else if (message.getMsgType() == MessageType.FRIEND_REQUEST.getCode() && cacheService.getOwner().getUserName().equals(message.getToUserName())) {
+                    else if (message.getMsgType() == MessageType.VERIFYMSG.getCode() && cacheService.getOwner().getUserName().equals(message.getToUserName())) {
                         if (messageHandler != null) {
                             if (messageHandler.handleFriendInvitation(message.getRecommendInfo())) {
                                 acceptFriendInvitation(message.getRecommendInfo());

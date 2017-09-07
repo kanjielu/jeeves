@@ -1,6 +1,6 @@
 package com.cherry.jeeves.enums;
 
-public enum AppMsgTyp {
+public enum AppMessageType {
 
     TEXT(1),
     IMG(2),
@@ -22,7 +22,7 @@ public enum AppMsgTyp {
 
     private final int code;
 
-    AppMsgTyp(int code) {
+    AppMessageType(int code) {
         this.code = code;
     }
 
