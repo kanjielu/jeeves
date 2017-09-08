@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,8 @@ public class LoginService {
 
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private SyncServie syncServie;
     @Autowired
     private WechatHttpService wechatHttpService;
 
@@ -153,8 +156,12 @@ public class LoginService {
             }
             logger.info("[8] batch get contact completed");
             cacheService.setAlive(true);
-            logger.info("[-] login process completed");
-        } catch (IOException | NotFoundException | WriterException ex) {
+            logger.info("[*] login process completed");
+            logger.info("[*] start listening");
+            while (true) {
+                syncServie.listen();
+            }
+        } catch (IOException | NotFoundException | WriterException | URISyntaxException ex) {
             throw new WechatException(ex);
         } catch (WechatQRExpiredException ex) {
             if (AUTO_RELOGIN_WHEN_QRCODE_EXPIRED) {
