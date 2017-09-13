@@ -74,6 +74,8 @@ public class WechatHttpService {
     private String WECHAT_URL_VERIFY_USER;
     @Value("${wechat.url.get_media}")
     private String WECHAT_URL_GET_MEDIA;
+    @Value("${wechat.url.create_chatroom}")
+    private String WECHAT_URL_CREATE_CHATROOM;
 
 
     private final RestTemplate restTemplate;
@@ -300,6 +302,24 @@ public class WechatHttpService {
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), StatusNotifyResponse.class);
+    }
+
+    public createChatRoomResponse createChatRoom(String hostUrl, String passTicket, BaseRequest baseRequest, String[] usernames, String topic) throws IOException {
+        String rnd = String.valueOf(System.currentTimeMillis());
+        final String url = String.format(hostUrl, rnd, passTicket);
+        createChatRoomRequest request = new createChatRoomRequest();
+        request.setBaseRequest(baseRequest);
+        request.setMemberCount(usernames.length);
+        ChatRoomMember[] members = new ChatRoomMember[usernames.length];
+        for (int i = 0; i < usernames.length; i++) {
+            members[i] = new ChatRoomMember();
+            members[i].setUserName(usernames[i]);
+        }
+        request.setMemberList(members);
+        request.setTopic(topic);
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), createChatRoomResponse.class);
     }
 
     private String escape(String str) throws IOException {
