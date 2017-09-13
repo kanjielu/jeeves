@@ -5,8 +5,10 @@ import com.cherry.jeeves.domain.request.component.BaseRequest;
 import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.*;
 import com.cherry.jeeves.enums.MessageType;
+import com.cherry.jeeves.enums.OpLogCmdId;
 import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.utils.DeviceIdGenerator;
+import com.cherry.jeeves.utils.RandomUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.http.client.utils.URIBuilder;
@@ -123,7 +125,7 @@ public class WechatHttpService {
         Pattern hostUrlPattern = Pattern.compile("window.redirect_uri=\\\"(.*)\\/cgi-bin");
         Pattern redirectUrlPattern = Pattern.compile("window.redirect_uri=\\\"(.*)\\\";");
         long time = System.currentTimeMillis();
-        final String url = String.format(WECHAT_URL_LOGIN, uuid, time / 1579L, time);
+        final String url = String.format(WECHAT_URL_LOGIN, uuid, RandomUtils.generateDateWithBitwiseNot(time), time);
         ResponseEntity<String> responseEntity
                 = redirectableRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(header), String.class);
         String body = responseEntity.getBody();
@@ -241,7 +243,7 @@ public class WechatHttpService {
     }
 
     public OpLogResponse setAlias(String hostUrl, String passTicket, BaseRequest baseRequest, String newAlias, String userName) throws IOException, RestClientException {
-        final int cmdId = 2;
+        final int cmdId = OpLogCmdId.MODREMARKNAME.getCode();
         final String url = String.format(WECHAT_URL_OP_LOG, hostUrl, passTicket);
         OpLogRequest request = new OpLogRequest();
         request.setBaseRequest(baseRequest);
@@ -266,8 +268,7 @@ public class WechatHttpService {
     }
 
     public InitResponse init(String hostUrl, BaseRequest baseRequest, String passTicket) throws IOException, RestClientException {
-        long rnd = System.currentTimeMillis() / 3158L;
-        String url = String.format(WECHAT_URL_INIT, hostUrl, rnd, passTicket);
+        String url = String.format(WECHAT_URL_INIT, hostUrl, RandomUtils.generateDateWithBitwiseNot(), passTicket);
         InitRequest request = new InitRequest();
         request.setBaseRequest(baseRequest);
         ResponseEntity<String> responseEntity
