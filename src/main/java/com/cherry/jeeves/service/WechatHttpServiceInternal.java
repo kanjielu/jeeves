@@ -295,6 +295,7 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), SyncResponse.class);
     }
 
+    //将网页端的状态通知手机端,例如消息已被读等
     StatusNotifyResponse statusNotify(String hostUrl, BaseRequest baseRequest, String userName, int code) throws IOException, RestClientException {
         String rnd = String.valueOf(System.currentTimeMillis());
         final String url = String.format(WECHAT_URL_STATUS_NOTIFY, hostUrl);
