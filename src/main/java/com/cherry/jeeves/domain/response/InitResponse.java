@@ -8,12 +8,14 @@ import com.cherry.jeeves.domain.shared.SyncKey;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Set;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InitResponse extends WechatHttpResponseBase {
     @JsonProperty
     private int Count;
     @JsonProperty
-    private Contact[] ContactList;
+    private Set<Contact> ContactList;
     @JsonProperty
     private SyncKey SyncKey;
     @JsonProperty
@@ -45,11 +47,11 @@ public class InitResponse extends WechatHttpResponseBase {
         Count = count;
     }
 
-    public Contact[] getContactList() {
+    public Set<Contact> getContactList() {
         return ContactList;
     }
 
-    public void setContactList(Contact[] contactList) {
+    public void setContactList(Set<Contact> contactList) {
         ContactList = contactList;
     }
 

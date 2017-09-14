@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Component
@@ -120,12 +119,12 @@ public class LoginService {
                 logger.info("[*] getContactResponse seq = " + getContactResponse.getSeq());
                 logger.info("[*] getContactResponse memberCount = " + getContactResponse.getMemberCount());
                 seq = getContactResponse.getSeq();
-                cacheService.getIndividuals().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isIndividual).collect(Collectors.toSet()));
-                cacheService.getMediaPlatforms().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isMediaPlatform).collect(Collectors.toSet()));
+                cacheService.getIndividuals().addAll(getContactResponse.getMemberList().stream().filter(WechatUtils::isIndividual).collect(Collectors.toSet()));
+                cacheService.getMediaPlatforms().addAll(getContactResponse.getMemberList().stream().filter(WechatUtils::isMediaPlatform).collect(Collectors.toSet()));
             } while (seq > 0);
             logger.info("[7] get contact completed");
             //8 batch get contact
-            ChatRoomDescription[] chatRoomDescriptions = Arrays.stream(initResponse.getContactList())
+            ChatRoomDescription[] chatRoomDescriptions = initResponse.getContactList().stream()
                     .filter(x -> x != null && WechatUtils.isChatRoom(x))
                     .map(x -> {
                         ChatRoomDescription description = new ChatRoomDescription();
@@ -140,7 +139,7 @@ public class LoginService {
                         chatRoomDescriptions);
                 WechatUtils.checkBaseResponse(batchGetContactResponse);
                 logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
-                cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
+                cacheService.getChatRooms().addAll(batchGetContactResponse.getContactList());
             }
             logger.info("[8] batch get contact completed");
             cacheService.setAlive(true);

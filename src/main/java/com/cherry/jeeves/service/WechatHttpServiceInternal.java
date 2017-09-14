@@ -80,6 +80,8 @@ class WechatHttpServiceInternal {
     private String WECHAT_URL_CREATE_CHATROOM;
     @Value("${wechat.url.delete_chatroom_member}")
     private String WECHAT_URL_DELETE_CHATROOM_MEMBER;
+    @Value("${wechat.url.add_chatroom_member}")
+    private String WECHAT_URL_ADD_CHATROOM_MEMBER;
 
     private final RestTemplate restTemplate;
     private final RestTemplate redirectableRestTemplate;
@@ -334,6 +336,17 @@ class WechatHttpServiceInternal {
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), DeleteChatRoomMemberResponse.class);
+    }
+
+    AddChatRoomMemberResponse addChatRoomMember(String hostUrl, BaseRequest baseRequest, String chatRoomUsername, String username) throws IOException {
+        final String url = String.format(WECHAT_URL_ADD_CHATROOM_MEMBER, hostUrl);
+        AddChatRoomMemberRequest request = new AddChatRoomMemberRequest();
+        request.setBaseRequest(baseRequest);
+        request.setChatRoomName(chatRoomUsername);
+        request.setAddMemberList(username);
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), AddChatRoomMemberResponse.class);
     }
 
     private String escape(String str) throws IOException {

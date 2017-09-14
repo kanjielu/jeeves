@@ -115,4 +115,19 @@ public class ChatRoomMember {
     public void setKeyword(String keyword) {
         Keyword = keyword;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ChatRoomMember that = (ChatRoomMember) o;
+
+        return UserName.equals(that.UserName);
+    }
+
+    @Override
+    public int hashCode() {
+        return UserName.hashCode();
+    }
 }

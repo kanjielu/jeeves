@@ -1,20 +1,18 @@
 package com.cherry.jeeves.domain.response;
 
 import com.cherry.jeeves.domain.response.component.WechatHttpResponseBase;
-import com.cherry.jeeves.domain.shared.Contact;
+import com.cherry.jeeves.domain.shared.ChatRoomMember;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GetContactResponse extends WechatHttpResponseBase {
+public class AddChatRoomMemberResponse extends WechatHttpResponseBase {
     @JsonProperty
     private int MemberCount;
     @JsonProperty
-    private Set<Contact> MemberList;
-    @JsonProperty
-    private long Seq;
+    private Set<ChatRoomMember> MemberList;
 
     public int getMemberCount() {
         return MemberCount;
@@ -24,19 +22,11 @@ public class GetContactResponse extends WechatHttpResponseBase {
         MemberCount = memberCount;
     }
 
-    public Set<Contact> getMemberList() {
+    public Set<ChatRoomMember> getMemberList() {
         return MemberList;
     }
 
-    public void setMemberList(Set<Contact> memberList) {
+    public void setMemberList(Set<ChatRoomMember> memberList) {
         MemberList = memberList;
-    }
-
-    public long getSeq() {
-        return Seq;
-    }
-
-    public void setSeq(long seq) {
-        Seq = seq;
     }
 }

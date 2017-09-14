@@ -3,13 +3,14 @@ package com.cherry.jeeves.service;
 import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.ChatRoomDescription;
 import com.cherry.jeeves.domain.shared.Contact;
+import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.utils.WechatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Set;
 
 @Component
 public class WechatHttpService {
@@ -45,7 +46,7 @@ public class WechatHttpService {
         WechatUtils.checkBaseResponse(response);
     }
 
-    public Contact[] batchGetContact(ChatRoomDescription[] list) throws IOException, RestClientException {
+    public Set<Contact> batchGetContact(ChatRoomDescription[] list) throws IOException, RestClientException {
         BatchGetContactResponse response = wechatHttpServiceInternal.batchGetContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), list);
         WechatUtils.checkBaseResponse(response);
         return response.getContactList();
@@ -60,12 +61,21 @@ public class WechatHttpService {
         ChatRoomDescription[] descriptions = new ChatRoomDescription[]{description};
         BatchGetContactResponse batchGetContactResponse = wechatHttpServiceInternal.batchGetContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), descriptions);
         WechatUtils.checkBaseResponse(batchGetContactResponse);
-        cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
-
+        cacheService.getChatRooms().addAll(batchGetContactResponse.getContactList());
     }
 
     public void deleteChatRoomMember(String chatRoomUsername, String username) throws IOException {
         DeleteChatRoomMemberResponse response = wechatHttpServiceInternal.deleteChatRoomMember(cacheService.getHostUrl(), cacheService.getBaseRequest(), chatRoomUsername, username);
         WechatUtils.checkBaseResponse(response);
+    }
+
+    public void addChatRoomMember(String chatRoomUsername, String username) throws IOException {
+        AddChatRoomMemberResponse response = wechatHttpServiceInternal.addChatRoomMember(cacheService.getHostUrl(), cacheService.getBaseRequest(), chatRoomUsername, username);
+        WechatUtils.checkBaseResponse(response);
+        Contact chatRoom = cacheService.getChatRooms().stream().filter(x -> chatRoomUsername.equals(x.getUserName())).findFirst().orElse(null);
+        if (chatRoom == null) {
+            throw new WechatException("can't find " + chatRoomUsername);
+        }
+        chatRoom.getMemberList().addAll(response.getMemberList());
     }
 }

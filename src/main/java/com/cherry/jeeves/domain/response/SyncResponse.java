@@ -5,6 +5,8 @@ import com.cherry.jeeves.domain.shared.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Set;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncResponse extends WechatHttpResponseBase {
     @JsonProperty
@@ -14,15 +16,15 @@ public class SyncResponse extends WechatHttpResponseBase {
     @JsonProperty
     private int ModContactCount;
     @JsonProperty
-    private Contact[] ModContactList;
+    private Set<Contact> ModContactList;
     @JsonProperty
     private int DelContactCount;
     @JsonProperty
-    private Contact[] DelContactList;
+    private Set<Contact> DelContactList;
     @JsonProperty
     private int ModChatRoomMemberCount;
     @JsonProperty
-    private Contact[] ModChatRoomMemberList;
+    private Set<Contact> ModChatRoomMemberList;
     @JsonProperty
     private Profile Profile;
     @JsonProperty
@@ -58,11 +60,11 @@ public class SyncResponse extends WechatHttpResponseBase {
         ModContactCount = modContactCount;
     }
 
-    public Contact[] getModContactList() {
+    public Set<Contact> getModContactList() {
         return ModContactList;
     }
 
-    public void setModContactList(Contact[] modContactList) {
+    public void setModContactList(Set<Contact> modContactList) {
         ModContactList = modContactList;
     }
 
@@ -74,11 +76,11 @@ public class SyncResponse extends WechatHttpResponseBase {
         DelContactCount = delContactCount;
     }
 
-    public Contact[] getDelContactList() {
+    public Set<Contact> getDelContactList() {
         return DelContactList;
     }
 
-    public void setDelContactList(Contact[] delContactList) {
+    public void setDelContactList(Set<Contact> delContactList) {
         DelContactList = delContactList;
     }
 
@@ -90,11 +92,11 @@ public class SyncResponse extends WechatHttpResponseBase {
         ModChatRoomMemberCount = modChatRoomMemberCount;
     }
 
-    public Contact[] getModChatRoomMemberList() {
+    public Set<Contact> getModChatRoomMemberList() {
         return ModChatRoomMemberList;
     }
 
-    public void setModChatRoomMemberList(Contact[] modChatRoomMemberList) {
+    public void setModChatRoomMemberList(Set<Contact> modChatRoomMemberList) {
         ModChatRoomMemberList = modChatRoomMemberList;
     }
 
@@ -103,7 +105,7 @@ public class SyncResponse extends WechatHttpResponseBase {
     }
 
     public void setProfile(Profile profile) {
-        this.Profile = profile;
+        Profile = profile;
     }
 
     public int getContinueFlag() {

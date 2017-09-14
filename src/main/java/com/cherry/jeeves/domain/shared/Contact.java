@@ -3,12 +3,14 @@ package com.cherry.jeeves.domain.shared;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Set;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Contact extends Member {
     @JsonProperty
     private int MemberCount;
     @JsonProperty
-    private ChatRoomMember[] MemberList;
+    private Set<ChatRoomMember> MemberList;
     @JsonProperty
     private int OwnerUin;
     @JsonProperty
@@ -130,11 +132,11 @@ public class Contact extends Member {
         MemberCount = memberCount;
     }
 
-    public ChatRoomMember[] getMemberList() {
+    public Set<ChatRoomMember> getMemberList() {
         return MemberList;
     }
 
-    public void setMemberList(ChatRoomMember[] memberList) {
+    public void setMemberList(Set<ChatRoomMember> memberList) {
         MemberList = memberList;
     }
 
