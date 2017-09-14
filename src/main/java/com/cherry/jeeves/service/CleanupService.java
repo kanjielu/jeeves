@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class CleanupService implements DisposableBean {
 
     @Autowired
-    private WechatHttpService wechatHttpService;
+    private WechatHttpServiceInternal wechatHttpService;
     @Autowired
     private CacheService cacheService;
 

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class LoginService {
     private static final Logger logger = LoggerFactory.getLogger(LoginService.class);
 
@@ -32,7 +32,7 @@ public class LoginService {
     @Autowired
     private SyncServie syncServie;
     @Autowired
-    private WechatHttpService wechatHttpService;
+    private WechatHttpServiceInternal wechatHttpService;
 
     @Value("${jeeves.auto-relogin-when-qrcode-expired}")
     private boolean AUTO_RELOGIN_WHEN_QRCODE_EXPIRED;
@@ -100,7 +100,7 @@ public class LoginService {
             }
             logger.info("[4] redirect completed");
             //5 init
-            InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), cacheService.getBaseRequest(), cacheService.getPassTicket());
+            InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), cacheService.getBaseRequest());
             if (!WechatUtils.checkBaseResponse(initResponse.getBaseResponse())) {
                 throw new WechatException("initResponse ret = " + initResponse.getBaseResponse().getRet());
             }
@@ -110,7 +110,6 @@ public class LoginService {
             //6 status notify
             StatusNotifyResponse statusNotifyResponse =
                     wechatHttpService.statusNotify(cacheService.getHostUrl(),
-                            cacheService.getPassTicket(),
                             cacheService.getBaseRequest(),
                             cacheService.getOwner().getUserName(), 3);
             if (!WechatUtils.checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
@@ -145,7 +144,6 @@ public class LoginService {
                 BatchGetContactResponse batchGetContactResponse = wechatHttpService.batchGetContact(
                         cacheService.getHostUrl(),
                         cacheService.getBaseRequest(),
-                        cacheService.getPassTicket(),
                         chatRoomDescriptions);
                 if (!WechatUtils.checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
                     throw new WechatException("batchGetContactResponse ret = " + batchGetContactResponse.getBaseResponse().getRet());

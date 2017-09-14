@@ -6,7 +6,6 @@ import com.cherry.jeeves.domain.shared.FriendInvitationContent;
 import com.cherry.jeeves.domain.shared.Message;
 import com.cherry.jeeves.domain.shared.RecommendInfo;
 import com.cherry.jeeves.exception.WechatException;
-import com.cherry.jeeves.service.CacheService;
 import com.cherry.jeeves.service.MessageHandler;
 import com.cherry.jeeves.service.WechatHttpService;
 import com.cherry.jeeves.utils.WechatUtils;
@@ -25,9 +24,7 @@ public class MessageHandlerImpl implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageHandlerImpl.class);
     @Autowired
-    private CacheService cacheService;
-    @Autowired
-    private WechatHttpService wechatHttpService;
+    private WechatHttpService wechatHttpServiceWrapper;
 
     @Override
     public void handleChatRoomMessage(Message message) {
@@ -50,33 +47,15 @@ public class MessageHandlerImpl implements MessageHandler {
         String content = StringEscapeUtils.unescapeXml(message.getContent());
         ObjectMapper xmlMapper = new XmlMapper();
         FriendInvitationContent friendInvitationContent = xmlMapper.readValue(content, FriendInvitationContent.class);
-        OpLogResponse opLogResponse = setAlias(message.getRecommendInfo().getUserName(), friendInvitationContent.getFromusername());
+        OpLogResponse opLogResponse = wechatHttpServiceWrapper.setAlias(friendInvitationContent.getFromusername(), message.getRecommendInfo().getUserName());
         if (!WechatUtils.checkBaseResponse(opLogResponse.getBaseResponse())) {
             throw new WechatException("opLogResponse ret = " + opLogResponse.getBaseResponse().getRet());
         }
     }
 
-    private SendMsgResponse sendMessage(String userName, String content) throws IOException {
-        return wechatHttpService.sendTextMsg(
-                cacheService.getHostUrl(),
-                cacheService.getBaseRequest(),
-                content,
-                cacheService.getOwner().getUserName(),
-                userName);
-    }
-
-    private OpLogResponse setAlias(String userName, String alias) throws IOException {
-        return wechatHttpService.setAlias(
-                cacheService.getHostUrl(),
-                cacheService.getPassTicket(),
-                cacheService.getBaseRequest(),
-                alias,
-                userName);
-    }
-
     private void replyMessage(Message message) throws IOException {
         //原文回复
-        SendMsgResponse sendMsgResponse = sendMessage(message.getFromUserName(), WechatUtils.textDecode(message.getContent()));
+        SendMsgResponse sendMsgResponse = wechatHttpServiceWrapper.sendTextMsg(WechatUtils.textDecode(message.getContent()), message.getFromUserName());
         if (!WechatUtils.checkBaseResponse(sendMsgResponse.getBaseResponse())) {
             throw new WechatException("sendMsgResponse ret = " + sendMsgResponse.getBaseResponse().getRet());
         }

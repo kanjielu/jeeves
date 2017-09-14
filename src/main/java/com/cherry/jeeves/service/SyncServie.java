@@ -15,19 +15,19 @@ import com.cherry.jeeves.utils.WechatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-@Service
+@Component
 public class SyncServie {
     private static final Logger logger = LoggerFactory.getLogger(SyncServie.class);
     @Autowired
     private CacheService cacheService;
     @Autowired
-    private WechatHttpService wechatHttpService;
+    private WechatHttpServiceInternal wechatHttpService;
     @Autowired(required = false)
     private MessageHandler messageHandler;
 
@@ -94,7 +94,7 @@ public class SyncServie {
     }
 
     private SyncResponse sync() throws IOException {
-        SyncResponse syncResponse = wechatHttpService.sync(cacheService.getHostUrl(), cacheService.getSyncKey(), cacheService.getBaseRequest(), cacheService.getPassTicket());
+        SyncResponse syncResponse = wechatHttpService.sync(cacheService.getHostUrl(), cacheService.getSyncKey(), cacheService.getBaseRequest());
         if (!WechatUtils.checkBaseResponse(syncResponse.getBaseResponse())) {
             throw new WechatException("syncResponse ret = " + syncResponse.getBaseResponse().getRet());
         }

@@ -5,12 +5,12 @@ import com.cherry.jeeves.domain.shared.Contact;
 import com.cherry.jeeves.domain.shared.Owner;
 import com.cherry.jeeves.domain.shared.SyncCheckKey;
 import com.cherry.jeeves.domain.shared.SyncKey;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Service
+@Component
 public class CacheService {
 
     public void reset() {
