@@ -5,6 +5,7 @@ import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.ChatRoomDescription;
 import com.cherry.jeeves.domain.shared.Token;
 import com.cherry.jeeves.enums.LoginCode;
+import com.cherry.jeeves.enums.StatusNotifyCode;
 import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.exception.WechatQRExpiredException;
 import com.cherry.jeeves.utils.QRCodeUtils;
@@ -108,7 +109,7 @@ public class LoginService {
             StatusNotifyResponse statusNotifyResponse =
                     wechatHttpServiceInternal.statusNotify(cacheService.getHostUrl(),
                             cacheService.getBaseRequest(),
-                            cacheService.getOwner().getUserName(), 3);
+                            cacheService.getOwner().getUserName(), StatusNotifyCode.INITED.getCode());
             WechatUtils.checkBaseResponse(statusNotifyResponse);
             logger.info("[6] status notify completed");
             //7 get contact
