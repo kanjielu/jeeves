@@ -40,6 +40,10 @@ public class BaseRequest {
     }
 
     public String getDeviceID() {
-        return DeviceIdGenerator.generate();
+        return DeviceID;
+    }
+
+    public void setDeviceID(String deviceID) {
+        DeviceID = deviceID;
     }
 }

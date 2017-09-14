@@ -1,11 +1,8 @@
 package com.cherry.jeeves;
 
-import com.cherry.jeeves.domain.response.OpLogResponse;
-import com.cherry.jeeves.domain.response.SendMsgResponse;
 import com.cherry.jeeves.domain.shared.FriendInvitationContent;
 import com.cherry.jeeves.domain.shared.Message;
 import com.cherry.jeeves.domain.shared.RecommendInfo;
-import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.service.MessageHandler;
 import com.cherry.jeeves.service.WechatHttpService;
 import com.cherry.jeeves.utils.WechatUtils;
@@ -24,7 +21,7 @@ public class MessageHandlerImpl implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageHandlerImpl.class);
     @Autowired
-    private WechatHttpService wechatHttpServiceWrapper;
+    private WechatHttpService wechatHttpService;
 
     @Override
     public void handleChatRoomMessage(Message message) {
@@ -47,17 +44,10 @@ public class MessageHandlerImpl implements MessageHandler {
         String content = StringEscapeUtils.unescapeXml(message.getContent());
         ObjectMapper xmlMapper = new XmlMapper();
         FriendInvitationContent friendInvitationContent = xmlMapper.readValue(content, FriendInvitationContent.class);
-        OpLogResponse opLogResponse = wechatHttpServiceWrapper.setAlias(friendInvitationContent.getFromusername(), message.getRecommendInfo().getUserName());
-        if (!WechatUtils.checkBaseResponse(opLogResponse.getBaseResponse())) {
-            throw new WechatException("opLogResponse ret = " + opLogResponse.getBaseResponse().getRet());
-        }
+        wechatHttpService.setAlias(friendInvitationContent.getFromusername(), message.getRecommendInfo().getUserName());
     }
 
     private void replyMessage(Message message) throws IOException {
-        //原文回复
-        SendMsgResponse sendMsgResponse = wechatHttpServiceWrapper.sendTextMsg(WechatUtils.textDecode(message.getContent()), message.getFromUserName());
-        if (!WechatUtils.checkBaseResponse(sendMsgResponse.getBaseResponse())) {
-            throw new WechatException("sendMsgResponse ret = " + sendMsgResponse.getBaseResponse().getRet());
-        }
+        wechatHttpService.sendTextMsg(WechatUtils.textDecode(message.getContent()), message.getFromUserName());
     }
 }

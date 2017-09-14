@@ -2,12 +2,15 @@ package com.cherry.jeeves.service;
 
 import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.ChatRoomDescription;
+import com.cherry.jeeves.domain.shared.Contact;
+import com.cherry.jeeves.exception.WechatException;
+import com.cherry.jeeves.utils.WechatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class WechatHttpService {
@@ -26,26 +29,49 @@ public class WechatHttpService {
     }
 
     public void sendAppMsg() throws RestClientException {
-        throw new NotImplementedException();
+        wechatHttpServiceInternal.sendAppMsg();
     }
 
-    public SendMsgResponse sendTextMsg(String content, String toUserName) throws IOException, RestClientException {
-        return wechatHttpServiceInternal.sendTextMsg(cacheService.getHostUrl(), cacheService.getBaseRequest(), content, cacheService.getOwner().getUserName(), toUserName);
+    public void sendTextMsg(String content, String toUserName) throws IOException, RestClientException {
+        SendMsgResponse response = wechatHttpServiceInternal.sendTextMsg(cacheService.getHostUrl(), cacheService.getBaseRequest(), content, cacheService.getOwner().getUserName(), toUserName);
+        if (!WechatUtils.checkBaseResponse(response.getBaseResponse())) {
+            throw new WechatException("SendMsgResponse ret = " + response.getBaseResponse().getRet());
+        }
     }
 
     public void sendImageMsg() throws RestClientException {
         wechatHttpServiceInternal.sendImageMsg();
     }
 
-    public OpLogResponse setAlias(String newAlias, String userName) throws IOException, RestClientException {
-        return wechatHttpServiceInternal.setAlias(cacheService.getHostUrl(), cacheService.getBaseRequest(), newAlias, userName);
+    public void setAlias(String newAlias, String userName) throws IOException, RestClientException {
+        OpLogResponse response = wechatHttpServiceInternal.setAlias(cacheService.getHostUrl(), cacheService.getBaseRequest(), newAlias, userName);
+        if (!WechatUtils.checkBaseResponse(response.getBaseResponse())) {
+            throw new WechatException("OpLogResponse ret = " + response.getBaseResponse().getRet());
+        }
     }
 
-    public BatchGetContactResponse batchGetContact(ChatRoomDescription[] list) throws IOException, RestClientException {
-        return wechatHttpServiceInternal.batchGetContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), list);
+    public Contact[] batchGetContact(ChatRoomDescription[] list) throws IOException, RestClientException {
+        BatchGetContactResponse response = wechatHttpServiceInternal.batchGetContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), list);
+        if (!WechatUtils.checkBaseResponse(response.getBaseResponse())) {
+            throw new WechatException("BatchGetContactResponse ret = " + response.getBaseResponse().getRet());
+        }
+        return response.getContactList();
     }
 
-    public createChatRoomResponse createChatRoom(String[] usernames, String topic) throws IOException {
-        return wechatHttpServiceInternal.createChatRoom(cacheService.getHostUrl(), cacheService.getBaseRequest(), usernames, topic);
+    public void createChatRoom(String[] usernames, String topic) throws IOException {
+        createChatRoomResponse response = wechatHttpServiceInternal.createChatRoom(cacheService.getHostUrl(), cacheService.getBaseRequest(), usernames, topic);
+        if (!WechatUtils.checkBaseResponse(response.getBaseResponse())) {
+            throw new WechatException("createChatRoomResponse ret = " + response.getBaseResponse().getRet());
+        }
+        //invoke BatchGetContact after CreateChatRoom
+        ChatRoomDescription description = new ChatRoomDescription();
+        description.setUserName(response.getChatRoomName());
+        ChatRoomDescription[] descriptions = new ChatRoomDescription[]{description};
+        BatchGetContactResponse batchGetContactResponse = wechatHttpServiceInternal.batchGetContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), descriptions);
+        if (!WechatUtils.checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
+            throw new WechatException("batchGetContactResponse ret = " + batchGetContactResponse.getBaseResponse().getRet());
+        } else {
+            cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
+        }
     }
 }

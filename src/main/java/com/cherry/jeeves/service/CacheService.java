@@ -5,6 +5,7 @@ import com.cherry.jeeves.domain.shared.Contact;
 import com.cherry.jeeves.domain.shared.Owner;
 import com.cherry.jeeves.domain.shared.SyncCheckKey;
 import com.cherry.jeeves.domain.shared.SyncKey;
+import com.cherry.jeeves.utils.DeviceIdGenerator;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -74,6 +75,7 @@ public class CacheService {
     }
 
     public BaseRequest getBaseRequest() {
+        baseRequest.setDeviceID(DeviceIdGenerator.generate());
         return baseRequest;
     }
 

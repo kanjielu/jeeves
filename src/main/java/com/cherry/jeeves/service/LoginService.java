@@ -32,7 +32,7 @@ public class LoginService {
     @Autowired
     private SyncServie syncServie;
     @Autowired
-    private WechatHttpServiceInternal wechatHttpService;
+    private WechatHttpServiceInternal wechatHttpServiceInternal;
 
     @Value("${jeeves.auto-relogin-when-qrcode-expired}")
     private boolean AUTO_RELOGIN_WHEN_QRCODE_EXPIRED;
@@ -40,11 +40,11 @@ public class LoginService {
     public void login() {
         try {
             //1 uuid
-            String uuid = wechatHttpService.getUUID();
+            String uuid = wechatHttpServiceInternal.getUUID();
             cacheService.setUuid(uuid);
             logger.info("[1] uuid completed");
             //2 qr
-            byte[] qrData = wechatHttpService.getQR(uuid);
+            byte[] qrData = wechatHttpServiceInternal.getQR(uuid);
             ByteArrayInputStream stream = new ByteArrayInputStream(qrData);
             String qrUrl = QRCodeUtils.decode(stream);
             stream.close();
@@ -54,7 +54,7 @@ public class LoginService {
             //3 login
             LoginResult loginResponse;
             while (true) {
-                loginResponse = wechatHttpService.login(uuid);
+                loginResponse = wechatHttpServiceInternal.login(uuid);
                 if (LoginCode.SUCCESS.getCode().equals(loginResponse.getCode())) {
                     if (loginResponse.getHostUrl() == null) {
                         throw new WechatException("hostUrl can't be found");
@@ -84,7 +84,7 @@ public class LoginService {
             }
             logger.info("[3] login completed");
             //4 redirect login
-            Token token = wechatHttpService.redirectLogin(loginResponse.getRedirectUrl());
+            Token token = wechatHttpServiceInternal.redirectLogin(loginResponse.getRedirectUrl());
             if (token.getRet() == 0) {
                 cacheService.setPassTicket(token.getPass_ticket());
                 cacheService.setsKey(token.getSkey());
@@ -100,7 +100,7 @@ public class LoginService {
             }
             logger.info("[4] redirect completed");
             //5 init
-            InitResponse initResponse = wechatHttpService.init(cacheService.getHostUrl(), cacheService.getBaseRequest());
+            InitResponse initResponse = wechatHttpServiceInternal.init(cacheService.getHostUrl(), cacheService.getBaseRequest());
             if (!WechatUtils.checkBaseResponse(initResponse.getBaseResponse())) {
                 throw new WechatException("initResponse ret = " + initResponse.getBaseResponse().getRet());
             }
@@ -109,7 +109,7 @@ public class LoginService {
             logger.info("[5] init completed");
             //6 status notify
             StatusNotifyResponse statusNotifyResponse =
-                    wechatHttpService.statusNotify(cacheService.getHostUrl(),
+                    wechatHttpServiceInternal.statusNotify(cacheService.getHostUrl(),
                             cacheService.getBaseRequest(),
                             cacheService.getOwner().getUserName(), 3);
             if (!WechatUtils.checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
@@ -119,7 +119,7 @@ public class LoginService {
             //7 get contact
             long seq = 0;
             do {
-                GetContactResponse getContactResponse = wechatHttpService.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest().getSkey(), seq);
+                GetContactResponse getContactResponse = wechatHttpServiceInternal.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest().getSkey(), seq);
                 if (!WechatUtils.checkBaseResponse(getContactResponse.getBaseResponse())) {
                     throw new WechatException("getContactResponse ret = " + getContactResponse.getBaseResponse().getRet());
                 } else {
@@ -141,7 +141,7 @@ public class LoginService {
                     })
                     .toArray(ChatRoomDescription[]::new);
             if (chatRoomDescriptions.length > 0) {
-                BatchGetContactResponse batchGetContactResponse = wechatHttpService.batchGetContact(
+                BatchGetContactResponse batchGetContactResponse = wechatHttpServiceInternal.batchGetContact(
                         cacheService.getHostUrl(),
                         cacheService.getBaseRequest(),
                         chatRoomDescriptions);
