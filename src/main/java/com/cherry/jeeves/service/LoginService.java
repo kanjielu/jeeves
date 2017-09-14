@@ -101,9 +101,7 @@ public class LoginService {
             logger.info("[4] redirect completed");
             //5 init
             InitResponse initResponse = wechatHttpServiceInternal.init(cacheService.getHostUrl(), cacheService.getBaseRequest());
-            if (!WechatUtils.checkBaseResponse(initResponse.getBaseResponse())) {
-                throw new WechatException("initResponse ret = " + initResponse.getBaseResponse().getRet());
-            }
+            WechatUtils.checkBaseResponse(initResponse);
             cacheService.setSyncKey(initResponse.getSyncKey());
             cacheService.setOwner(initResponse.getUser());
             logger.info("[5] init completed");
@@ -112,23 +110,18 @@ public class LoginService {
                     wechatHttpServiceInternal.statusNotify(cacheService.getHostUrl(),
                             cacheService.getBaseRequest(),
                             cacheService.getOwner().getUserName(), 3);
-            if (!WechatUtils.checkBaseResponse(statusNotifyResponse.getBaseResponse())) {
-                throw new WechatException("statusNotifyResponse ret = " + statusNotifyResponse.getBaseResponse().getRet());
-            }
+            WechatUtils.checkBaseResponse(statusNotifyResponse);
             logger.info("[6] status notify completed");
             //7 get contact
             long seq = 0;
             do {
                 GetContactResponse getContactResponse = wechatHttpServiceInternal.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest().getSkey(), seq);
-                if (!WechatUtils.checkBaseResponse(getContactResponse.getBaseResponse())) {
-                    throw new WechatException("getContactResponse ret = " + getContactResponse.getBaseResponse().getRet());
-                } else {
-                    logger.info("[*] getContactResponse seq = " + getContactResponse.getSeq());
-                    logger.info("[*] getContactResponse memberCount = " + getContactResponse.getMemberCount());
-                    seq = getContactResponse.getSeq();
-                    cacheService.getIndividuals().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isIndividual).collect(Collectors.toSet()));
-                    cacheService.getMediaPlatforms().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isMediaPlatform).collect(Collectors.toSet()));
-                }
+                WechatUtils.checkBaseResponse(getContactResponse);
+                logger.info("[*] getContactResponse seq = " + getContactResponse.getSeq());
+                logger.info("[*] getContactResponse memberCount = " + getContactResponse.getMemberCount());
+                seq = getContactResponse.getSeq();
+                cacheService.getIndividuals().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isIndividual).collect(Collectors.toSet()));
+                cacheService.getMediaPlatforms().addAll(Arrays.stream(getContactResponse.getMemberList()).filter(WechatUtils::isMediaPlatform).collect(Collectors.toSet()));
             } while (seq > 0);
             logger.info("[7] get contact completed");
             //8 batch get contact
@@ -145,12 +138,9 @@ public class LoginService {
                         cacheService.getHostUrl(),
                         cacheService.getBaseRequest(),
                         chatRoomDescriptions);
-                if (!WechatUtils.checkBaseResponse(batchGetContactResponse.getBaseResponse())) {
-                    throw new WechatException("batchGetContactResponse ret = " + batchGetContactResponse.getBaseResponse().getRet());
-                } else {
-                    logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
-                    cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
-                }
+                WechatUtils.checkBaseResponse(batchGetContactResponse);
+                logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
+                cacheService.getChatRooms().addAll(Arrays.asList(batchGetContactResponse.getContactList()));
             }
             logger.info("[8] batch get contact completed");
             cacheService.setAlive(true);

@@ -1,13 +1,16 @@
 package com.cherry.jeeves.utils;
 
-import com.cherry.jeeves.domain.response.component.BaseResponse;
+import com.cherry.jeeves.domain.response.component.WechatHttpResponseBase;
 import com.cherry.jeeves.domain.shared.Contact;
+import com.cherry.jeeves.exception.WechatException;
 
 import java.nio.charset.StandardCharsets;
 
 public class WechatUtils {
-    public static boolean checkBaseResponse(BaseResponse baseResponse) {
-        return baseResponse.getRet() == 0;
+    public static void checkBaseResponse(WechatHttpResponseBase response) {
+        if (response.getBaseResponse().getRet() != 0) {
+            throw new WechatException(response.getClass().getSimpleName() + " ret = " + response.getBaseResponse().getRet());
+        }
     }
 
     public static String textDecode(String text) {

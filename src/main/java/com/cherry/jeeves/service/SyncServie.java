@@ -95,9 +95,7 @@ public class SyncServie {
 
     private SyncResponse sync() throws IOException {
         SyncResponse syncResponse = wechatHttpService.sync(cacheService.getHostUrl(), cacheService.getSyncKey(), cacheService.getBaseRequest());
-        if (!WechatUtils.checkBaseResponse(syncResponse.getBaseResponse())) {
-            throw new WechatException("syncResponse ret = " + syncResponse.getBaseResponse().getRet());
-        }
+        WechatUtils.checkBaseResponse(syncResponse);
         cacheService.setSyncKey(syncResponse.getSyncKey());
         cacheService.setSyncCheckKey(syncResponse.getSyncCheckKey());
         //mod包含新增和修改
@@ -139,8 +137,6 @@ public class SyncServie {
                 cacheService.getPassTicket(),
                 new VerifyUser[]{user}
         );
-        if (!WechatUtils.checkBaseResponse(verifyUserResponse.getBaseResponse())) {
-            throw new WechatException("verifyUserResponse ret = " + verifyUserResponse.getBaseResponse().getRet());
-        }
+        WechatUtils.checkBaseResponse(verifyUserResponse);
     }
 }

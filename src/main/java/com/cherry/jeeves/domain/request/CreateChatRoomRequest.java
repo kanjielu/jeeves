@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class createChatRoomRequest {
+public class CreateChatRoomRequest {
     @JsonProperty
     private BaseRequest BaseRequest;
     @JsonProperty

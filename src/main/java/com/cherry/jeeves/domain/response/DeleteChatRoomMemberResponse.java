@@ -4,5 +4,5 @@ import com.cherry.jeeves.domain.response.component.WechatHttpResponseBase;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OpLogResponse extends WechatHttpResponseBase {
+public class DeleteChatRoomMemberResponse extends WechatHttpResponseBase {
 }

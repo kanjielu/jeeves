@@ -1,6 +1,5 @@
 package com.cherry.jeeves.domain.request.component;
 
-import com.cherry.jeeves.utils.DeviceIdGenerator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

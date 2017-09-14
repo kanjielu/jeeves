@@ -1,15 +1,13 @@
 package com.cherry.jeeves.domain.response;
 
 
-import com.cherry.jeeves.domain.response.component.BaseResponse;
+import com.cherry.jeeves.domain.response.component.WechatHttpResponseBase;
 import com.cherry.jeeves.domain.shared.ChatRoomMember;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class createChatRoomResponse {
-    @JsonProperty
-    private BaseResponse BaseResponse;
+public class CreateChatRoomResponse extends WechatHttpResponseBase {
     @JsonProperty
     private Object BlackList;
     @JsonProperty
@@ -24,14 +22,6 @@ public class createChatRoomResponse {
     private String QuanPin;
     @JsonProperty
     private String Topic;
-
-    public BaseResponse getBaseResponse() {
-        return BaseResponse;
-    }
-
-    public void setBaseResponse(BaseResponse baseResponse) {
-        BaseResponse = baseResponse;
-    }
 
     public Object getBlackList() {
         return BlackList;

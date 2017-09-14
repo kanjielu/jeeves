@@ -1,14 +1,12 @@
 package com.cherry.jeeves.domain.response;
 
-import com.cherry.jeeves.domain.response.component.BaseResponse;
+import com.cherry.jeeves.domain.response.component.WechatHttpResponseBase;
 import com.cherry.jeeves.domain.shared.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SyncResponse {
-    @JsonProperty
-    private BaseResponse BaseResponse;
+public class SyncResponse extends WechatHttpResponseBase {
     @JsonProperty
     private int AddMsgCount;
     @JsonProperty
@@ -35,14 +33,6 @@ public class SyncResponse {
     private String SKey;
     @JsonProperty
     private SyncCheckKey SyncCheckKey;
-
-    public BaseResponse getBaseResponse() {
-        return BaseResponse;
-    }
-
-    public void setBaseResponse(BaseResponse baseResponse) {
-        BaseResponse = baseResponse;
-    }
 
     public int getAddMsgCount() {
         return AddMsgCount;

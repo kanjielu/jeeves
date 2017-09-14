@@ -4,8 +4,10 @@ import com.cherry.jeeves.domain.request.*;
 import com.cherry.jeeves.domain.request.component.BaseRequest;
 import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.*;
+import com.cherry.jeeves.enums.AddScene;
 import com.cherry.jeeves.enums.MessageType;
 import com.cherry.jeeves.enums.OpLogCmdId;
+import com.cherry.jeeves.enums.VerifyUserOPCode;
 import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.utils.DeviceIdGenerator;
 import com.cherry.jeeves.utils.RandomUtils;
@@ -76,7 +78,8 @@ class WechatHttpServiceInternal {
     private String WECHAT_URL_GET_MEDIA;
     @Value("${wechat.url.create_chatroom}")
     private String WECHAT_URL_CREATE_CHATROOM;
-
+    @Value("${wechat.url.delete_chatroom_member}")
+    private String WECHAT_URL_DELETE_CHATROOM_MEMBER;
 
     private final RestTemplate restTemplate;
     private final RestTemplate redirectableRestTemplate;
@@ -193,8 +196,8 @@ class WechatHttpServiceInternal {
     }
 
     VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws IOException, URISyntaxException, RestClientException {
-        final int opCode = 3;
-        final int[] sceneList = new int[]{33};
+        final int opCode = VerifyUserOPCode.VERIFYOK.getCode();
+        final int[] sceneList = new int[]{AddScene.WEB.getCode()};
         final String path = String.format(WECHAT_URL_VERIFY_USER, hostUrl);
         VerifyUserRequest request = new VerifyUserRequest();
         request.setBaseRequest(baseRequest);
@@ -304,10 +307,10 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), StatusNotifyResponse.class);
     }
 
-    createChatRoomResponse createChatRoom(String hostUrl, BaseRequest baseRequest, String[] usernames, String topic) throws IOException {
+    CreateChatRoomResponse createChatRoom(String hostUrl, BaseRequest baseRequest, String[] usernames, String topic) throws IOException {
         String rnd = String.valueOf(System.currentTimeMillis());
-        final String url = String.format(hostUrl, rnd);
-        createChatRoomRequest request = new createChatRoomRequest();
+        final String url = String.format(WECHAT_URL_CREATE_CHATROOM, hostUrl, rnd);
+        CreateChatRoomRequest request = new CreateChatRoomRequest();
         request.setBaseRequest(baseRequest);
         request.setMemberCount(usernames.length);
         ChatRoomMember[] members = new ChatRoomMember[usernames.length];
@@ -319,7 +322,18 @@ class WechatHttpServiceInternal {
         request.setTopic(topic);
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
-        return jsonMapper.readValue(responseEntity.getBody(), createChatRoomResponse.class);
+        return jsonMapper.readValue(responseEntity.getBody(), CreateChatRoomResponse.class);
+    }
+
+    DeleteChatRoomMemberResponse deleteChatRoomMember(String hostUrl, BaseRequest baseRequest, String chatRoomUsername, String username) throws IOException {
+        final String url = String.format(WECHAT_URL_DELETE_CHATROOM_MEMBER, hostUrl);
+        DeleteChatRoomMemberRequest request = new DeleteChatRoomMemberRequest();
+        request.setBaseRequest(baseRequest);
+        request.setChatRoomName(chatRoomUsername);
+        request.setDelMemberList(username);
+        ResponseEntity<String> responseEntity
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
+        return jsonMapper.readValue(responseEntity.getBody(), DeleteChatRoomMemberResponse.class);
     }
 
     private String escape(String str) throws IOException {
