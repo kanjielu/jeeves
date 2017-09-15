@@ -32,8 +32,8 @@ public class WechatHttpService {
         wechatHttpServiceInternal.sendAppMsg();
     }
 
-    public void sendTextMsg(String content, String toUserName) throws IOException, RestClientException {
-        SendMsgResponse response = wechatHttpServiceInternal.sendTextMsg(cacheService.getHostUrl(), cacheService.getBaseRequest(), content, cacheService.getOwner().getUserName(), toUserName);
+    public void sendTextMsg(String userName, String content) throws IOException, RestClientException {
+        SendMsgResponse response = wechatHttpServiceInternal.sendTextMsg(cacheService.getHostUrl(), cacheService.getBaseRequest(), content, cacheService.getOwner().getUserName(), userName);
         WechatUtils.checkBaseResponse(response);
     }
 
@@ -41,7 +41,7 @@ public class WechatHttpService {
         wechatHttpServiceInternal.sendImageMsg();
     }
 
-    public void setAlias(String newAlias, String userName) throws IOException, RestClientException {
+    public void setAlias(String userName, String newAlias) throws IOException, RestClientException {
         OpLogResponse response = wechatHttpServiceInternal.setAlias(cacheService.getHostUrl(), cacheService.getBaseRequest(), newAlias, userName);
         WechatUtils.checkBaseResponse(response);
     }
@@ -52,8 +52,8 @@ public class WechatHttpService {
         return response.getContactList();
     }
 
-    public void createChatRoom(String[] usernames, String topic) throws IOException {
-        CreateChatRoomResponse response = wechatHttpServiceInternal.createChatRoom(cacheService.getHostUrl(), cacheService.getBaseRequest(), usernames, topic);
+    public void createChatRoom(String[] userNames, String topic) throws IOException {
+        CreateChatRoomResponse response = wechatHttpServiceInternal.createChatRoom(cacheService.getHostUrl(), cacheService.getBaseRequest(), userNames, topic);
         WechatUtils.checkBaseResponse(response);
         //invoke BatchGetContact after CreateChatRoom
         ChatRoomDescription description = new ChatRoomDescription();
@@ -64,17 +64,17 @@ public class WechatHttpService {
         cacheService.getChatRooms().addAll(batchGetContactResponse.getContactList());
     }
 
-    public void deleteChatRoomMember(String chatRoomUsername, String username) throws IOException {
-        DeleteChatRoomMemberResponse response = wechatHttpServiceInternal.deleteChatRoomMember(cacheService.getHostUrl(), cacheService.getBaseRequest(), chatRoomUsername, username);
+    public void deleteChatRoomMember(String chatRoomUserName, String userName) throws IOException {
+        DeleteChatRoomMemberResponse response = wechatHttpServiceInternal.deleteChatRoomMember(cacheService.getHostUrl(), cacheService.getBaseRequest(), chatRoomUserName, userName);
         WechatUtils.checkBaseResponse(response);
     }
 
-    public void addChatRoomMember(String chatRoomUsername, String username) throws IOException {
-        AddChatRoomMemberResponse response = wechatHttpServiceInternal.addChatRoomMember(cacheService.getHostUrl(), cacheService.getBaseRequest(), chatRoomUsername, username);
+    public void addChatRoomMember(String chatRoomUserName, String userName) throws IOException {
+        AddChatRoomMemberResponse response = wechatHttpServiceInternal.addChatRoomMember(cacheService.getHostUrl(), cacheService.getBaseRequest(), chatRoomUserName, userName);
         WechatUtils.checkBaseResponse(response);
-        Contact chatRoom = cacheService.getChatRooms().stream().filter(x -> chatRoomUsername.equals(x.getUserName())).findFirst().orElse(null);
+        Contact chatRoom = cacheService.getChatRooms().stream().filter(x -> chatRoomUserName.equals(x.getUserName())).findFirst().orElse(null);
         if (chatRoom == null) {
-            throw new WechatException("can't find " + chatRoomUsername);
+            throw new WechatException("can't find " + chatRoomUserName);
         }
         chatRoom.getMemberList().addAll(response.getMemberList());
     }

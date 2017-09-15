@@ -44,10 +44,10 @@ public class MessageHandlerImpl implements MessageHandler {
         String content = StringEscapeUtils.unescapeXml(message.getContent());
         ObjectMapper xmlMapper = new XmlMapper();
         FriendInvitationContent friendInvitationContent = xmlMapper.readValue(content, FriendInvitationContent.class);
-        wechatHttpService.setAlias(friendInvitationContent.getFromusername(), message.getRecommendInfo().getUserName());
+        wechatHttpService.setAlias(message.getRecommendInfo().getUserName(), friendInvitationContent.getFromusername());
     }
 
     private void replyMessage(Message message) throws IOException {
-        wechatHttpService.sendTextMsg(WechatUtils.textDecode(message.getContent()), message.getFromUserName());
+        wechatHttpService.sendTextMsg(message.getFromUserName(), WechatUtils.textDecode(message.getContent()));
     }
 }

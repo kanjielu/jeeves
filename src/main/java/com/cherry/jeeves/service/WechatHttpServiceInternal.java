@@ -310,16 +310,16 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), StatusNotifyResponse.class);
     }
 
-    CreateChatRoomResponse createChatRoom(String hostUrl, BaseRequest baseRequest, String[] usernames, String topic) throws IOException {
+    CreateChatRoomResponse createChatRoom(String hostUrl, BaseRequest baseRequest, String[] userNames, String topic) throws IOException {
         String rnd = String.valueOf(System.currentTimeMillis());
         final String url = String.format(WECHAT_URL_CREATE_CHATROOM, hostUrl, rnd);
         CreateChatRoomRequest request = new CreateChatRoomRequest();
         request.setBaseRequest(baseRequest);
-        request.setMemberCount(usernames.length);
-        ChatRoomMember[] members = new ChatRoomMember[usernames.length];
-        for (int i = 0; i < usernames.length; i++) {
+        request.setMemberCount(userNames.length);
+        ChatRoomMember[] members = new ChatRoomMember[userNames.length];
+        for (int i = 0; i < userNames.length; i++) {
             members[i] = new ChatRoomMember();
-            members[i].setUserName(usernames[i]);
+            members[i].setUserName(userNames[i]);
         }
         request.setMemberList(members);
         request.setTopic(topic);
@@ -328,23 +328,23 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), CreateChatRoomResponse.class);
     }
 
-    DeleteChatRoomMemberResponse deleteChatRoomMember(String hostUrl, BaseRequest baseRequest, String chatRoomUsername, String username) throws IOException {
+    DeleteChatRoomMemberResponse deleteChatRoomMember(String hostUrl, BaseRequest baseRequest, String chatRoomUserName, String userName) throws IOException {
         final String url = String.format(WECHAT_URL_DELETE_CHATROOM_MEMBER, hostUrl);
         DeleteChatRoomMemberRequest request = new DeleteChatRoomMemberRequest();
         request.setBaseRequest(baseRequest);
-        request.setChatRoomName(chatRoomUsername);
-        request.setDelMemberList(username);
+        request.setChatRoomName(chatRoomUserName);
+        request.setDelMemberList(userName);
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), DeleteChatRoomMemberResponse.class);
     }
 
-    AddChatRoomMemberResponse addChatRoomMember(String hostUrl, BaseRequest baseRequest, String chatRoomUsername, String username) throws IOException {
+    AddChatRoomMemberResponse addChatRoomMember(String hostUrl, BaseRequest baseRequest, String chatRoomUserName, String userName) throws IOException {
         final String url = String.format(WECHAT_URL_ADD_CHATROOM_MEMBER, hostUrl);
         AddChatRoomMemberRequest request = new AddChatRoomMemberRequest();
         request.setBaseRequest(baseRequest);
-        request.setChatRoomName(chatRoomUsername);
-        request.setAddMemberList(username);
+        request.setChatRoomName(chatRoomUserName);
+        request.setAddMemberList(userName);
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.header), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), AddChatRoomMemberResponse.class);
