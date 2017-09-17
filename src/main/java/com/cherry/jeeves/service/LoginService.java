@@ -84,7 +84,7 @@ public class LoginService {
             }
             logger.info("[3] login completed");
             //4 redirect login
-            Token token = wechatHttpServiceInternal.redirectLogin(loginResponse.getRedirectUrl());
+            Token token = wechatHttpServiceInternal.openNewloginpage(loginResponse.getRedirectUrl());
             if (token.getRet() == 0) {
                 cacheService.setPassTicket(token.getPass_ticket());
                 cacheService.setsKey(token.getSkey());
