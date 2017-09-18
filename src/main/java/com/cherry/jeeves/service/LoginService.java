@@ -39,6 +39,8 @@ public class LoginService {
 
     public void login() {
         try {
+            //0 entry
+            wechatHttpServiceInternal.open();
             //1 uuid
             String uuid = wechatHttpServiceInternal.getUUID();
             cacheService.setUuid(uuid);
@@ -51,7 +53,10 @@ public class LoginService {
             String qr = QRCodeUtils.generateQR(qrUrl, 40, 40);
             logger.info(qr);
             logger.info("[2] qrcode completed");
-            //3 login
+            //3 statreport
+            wechatHttpServiceInternal.statReport();
+            logger.info("[3] statReport completed");
+            //4 login
             LoginResult loginResponse;
             while (true) {
                 loginResponse = wechatHttpServiceInternal.login(uuid);
@@ -82,8 +87,8 @@ public class LoginService {
                     logger.info("[*] login status = " + loginResponse.getCode());
                 }
             }
-            logger.info("[3] login completed");
-            //4 redirect login
+            logger.info("[4] login completed");
+            //5 redirect login
             Token token = wechatHttpServiceInternal.openNewloginpage(loginResponse.getRedirectUrl());
             if (token.getRet() == 0) {
                 cacheService.setPassTicket(token.getPass_ticket());
@@ -98,21 +103,24 @@ public class LoginService {
             } else {
                 throw new WechatException("token ret = " + token.getRet());
             }
-            logger.info("[4] redirect completed");
-            //5 init
+            logger.info("[5] redirect login completed");
+            //6 redirect
+            wechatHttpServiceInternal.redirect(cacheService.getHostUrl());
+            logger.info("[6] redirect completed");
+            //7 init
             InitResponse initResponse = wechatHttpServiceInternal.init(cacheService.getHostUrl(), cacheService.getBaseRequest());
             WechatUtils.checkBaseResponse(initResponse);
             cacheService.setSyncKey(initResponse.getSyncKey());
             cacheService.setOwner(initResponse.getUser());
-            logger.info("[5] init completed");
-            //6 status notify
+            logger.info("[7] init completed");
+            //8 status notify
             StatusNotifyResponse statusNotifyResponse =
                     wechatHttpServiceInternal.statusNotify(cacheService.getHostUrl(),
                             cacheService.getBaseRequest(),
                             cacheService.getOwner().getUserName(), StatusNotifyCode.INITED.getCode());
             WechatUtils.checkBaseResponse(statusNotifyResponse);
-            logger.info("[6] status notify completed");
-            //7 get contact
+            logger.info("[8] status notify completed");
+            //9 get contact
             long seq = 0;
             do {
                 GetContactResponse getContactResponse = wechatHttpServiceInternal.getContact(cacheService.getHostUrl(), cacheService.getBaseRequest().getSkey(), seq);
@@ -123,8 +131,8 @@ public class LoginService {
                 cacheService.getIndividuals().addAll(getContactResponse.getMemberList().stream().filter(WechatUtils::isIndividual).collect(Collectors.toSet()));
                 cacheService.getMediaPlatforms().addAll(getContactResponse.getMemberList().stream().filter(WechatUtils::isMediaPlatform).collect(Collectors.toSet()));
             } while (seq > 0);
-            logger.info("[7] get contact completed");
-            //8 batch get contact
+            logger.info("[9] get contact completed");
+            //10 batch get contact
             ChatRoomDescription[] chatRoomDescriptions = initResponse.getContactList().stream()
                     .filter(x -> x != null && WechatUtils.isChatRoom(x))
                     .map(x -> {
@@ -142,7 +150,7 @@ public class LoginService {
                 logger.info("[*] batchGetContactResponse count = " + batchGetContactResponse.getCount());
                 cacheService.getChatRooms().addAll(batchGetContactResponse.getContactList());
             }
-            logger.info("[8] batch get contact completed");
+            logger.info("[10] batch get contact completed");
             cacheService.setAlive(true);
             logger.info("[*] login process completed");
             logger.info("[*] start listening");

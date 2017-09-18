@@ -4,24 +4,24 @@ import com.cherry.jeeves.domain.request.*;
 import com.cherry.jeeves.domain.request.component.BaseRequest;
 import com.cherry.jeeves.domain.response.*;
 import com.cherry.jeeves.domain.shared.*;
-import com.cherry.jeeves.enums.AddScene;
-import com.cherry.jeeves.enums.MessageType;
-import com.cherry.jeeves.enums.OpLogCmdId;
-import com.cherry.jeeves.enums.VerifyUserOPCode;
+import com.cherry.jeeves.enums.*;
 import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.utils.DeviceIdGenerator;
 import com.cherry.jeeves.utils.HeaderUtils;
 import com.cherry.jeeves.utils.RandomUtils;
+import com.cherry.jeeves.utils.rest.StatefullRestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +46,8 @@ class WechatHttpServiceInternal {
     private String WECHAT_URL_QRCODE;
     @Value("${wechat.url.status_notify}")
     private String WECHAT_URL_STATUS_NOTIFY;
+    @Value("${wechat.url.statreport}")
+    private String WECHAT_URL_STATREPORT;
     @Value("${wechat.url.login}")
     private String WECHAT_URL_LOGIN;
     @Value("${wechat.url.init}")
@@ -85,7 +88,6 @@ class WechatHttpServiceInternal {
     private String WECHAT_URL_ADD_CHATROOM_MEMBER;
 
     private final RestTemplate restTemplate;
-    private final RestTemplate redirectableRestTemplate;
     private final HttpHeaders postHeader;
     private final HttpHeaders getHeader;
     private final ObjectMapper jsonMapper = new ObjectMapper();
@@ -94,9 +96,8 @@ class WechatHttpServiceInternal {
     private String BROWSER_DEFAULT_CONNECTION = "keep-alive";
 
     @Autowired
-    WechatHttpServiceInternal(RestTemplate restTemplate, RestTemplate redirectableRestTemplate, @Value("${wechat.ua}") String BROWSER_DEFAULT_USER_AGENT) {
+    WechatHttpServiceInternal(RestTemplate restTemplate, @Value("${wechat.ua}") String BROWSER_DEFAULT_USER_AGENT) {
         this.restTemplate = restTemplate;
-        this.redirectableRestTemplate = redirectableRestTemplate;
         this.postHeader = new HttpHeaders();
         postHeader.set(HttpHeaders.USER_AGENT, BROWSER_DEFAULT_USER_AGENT);
         postHeader.set(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
@@ -111,12 +112,15 @@ class WechatHttpServiceInternal {
         getHeader.setConnection(BROWSER_DEFAULT_CONNECTION);
     }
 
-    void logout(String hostUrl, String skey) throws IOException, RestClientException {
+    void logout(String hostUrl, String skey) throws IOException {
         final String url = String.format(WECHAT_URL_LOGOUT, hostUrl, escape(skey));
         restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(postHeader), Object.class);
     }
 
-    void open() throws IOException, RestClientException {
+    /**
+     * Open the entry page.
+     */
+    void open() {
         final String url = WECHAT_URL_ENTRY;
         HttpHeaders customHeader = new HttpHeaders();
         customHeader.setPragma("no-cache");
@@ -124,10 +128,21 @@ class WechatHttpServiceInternal {
         customHeader.set("Upgrade-Insecure-Requests", "1");
         customHeader.set(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         HeaderUtils.assign(customHeader, getHeader);
-        restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(customHeader), Object.class);
+        restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(customHeader), String.class);
+        //manually insert two cookies into cookiestore, as they're supposed to be stored in browsers by javascript.
+        CookieStore store = (CookieStore) ((StatefullRestTemplate) restTemplate).getHttpContext().getAttribute(HttpClientContext.COOKIE_STORE);
+        Date maxDate = new Date(Long.MAX_VALUE);
+        String domain = WECHAT_URL_ENTRY.replaceAll("https://", "").replaceAll("/", "");
+        String[] cookieNames = new String[]{"MM_WX_NOTIFY_STATE", "MM_WX_SOUND_STATE"};
+        appendAdditionalCookies(store, cookieNames, domain, "/", maxDate);
     }
 
-    String getUUID() throws RestClientException {
+    /**
+     * Get UUID for this session
+     *
+     * @return UUID
+     */
+    String getUUID() {
         final String regEx = "window.QRLogin.code = (\\d+); window.QRLogin.uuid = \"(\\S+?)\";";
         final String url = String.format(WECHAT_URL_UUID, System.currentTimeMillis());
         final String successCode = "200";
@@ -149,7 +164,13 @@ class WechatHttpServiceInternal {
         throw new WechatException("uuid can't be found");
     }
 
-    byte[] getQR(String uuid) throws RestClientException {
+    /**
+     * Get QR code for scanning
+     *
+     * @param uuid UUID
+     * @return QR code in binary
+     */
+    byte[] getQR(String uuid) {
         final String url = WECHAT_URL_QRCODE + "/" + uuid;
         HttpHeaders customHeader = new HttpHeaders();
         customHeader.set(HttpHeaders.ACCEPT, "image/webp,image/apng,image/*,*/*;q=0.8");
@@ -161,7 +182,14 @@ class WechatHttpServiceInternal {
         return responseEntity.getBody();
     }
 
-    LoginResult login(String uuid) throws WechatException, RestClientException {
+    /**
+     * Get hostUrl and redirectUrl
+     *
+     * @param uuid
+     * @return hostUrl and redirectUrl
+     * @throws WechatException if the response doesn't contain code
+     */
+    LoginResult login(String uuid) throws WechatException {
         final Pattern pattern = Pattern.compile("window.code=(\\d+)");
         Pattern hostUrlPattern = Pattern.compile("window.redirect_uri=\\\"(.*)\\/cgi-bin");
         Pattern redirectUrlPattern = Pattern.compile("window.redirect_uri=\\\"(.*)\\\";");
@@ -192,7 +220,14 @@ class WechatHttpServiceInternal {
         return response;
     }
 
-    Token openNewloginpage(String redirectUrl) throws IOException, RestClientException {
+    /**
+     * Get basic parameters for this session
+     *
+     * @param redirectUrl
+     * @return session token
+     * @throws IOException if the http response body can't be convert to {@link Token}
+     */
+    Token openNewloginpage(String redirectUrl) throws IOException {
         HttpHeaders customHeader = new HttpHeaders();
         customHeader.set(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         customHeader.set(HttpHeaders.REFERER, WECHAT_URL_ENTRY);
@@ -205,18 +240,38 @@ class WechatHttpServiceInternal {
         return xmlMapper.readValue(xmlString, Token.class);
     }
 
-    void redirect(String hostUrl) throws IOException, RestClientException {
+    /**
+     * Redirect to main page of wechat
+     *
+     * @param hostUrl hostUrl
+     */
+    void redirect(String hostUrl) {
         final String url = hostUrl + "/";
         HttpHeaders customHeader = new HttpHeaders();
         customHeader.set(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         customHeader.set(HttpHeaders.REFERER, WECHAT_URL_ENTRY);
         customHeader.set("Upgrade-Insecure-Requests", "1");
         HeaderUtils.assign(customHeader, getHeader);
-        restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(customHeader), Object.class);
+        restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(customHeader), String.class);
     }
 
-    InitResponse init(String hostUrl, BaseRequest baseRequest) throws IOException, RestClientException {
+    /**
+     * Initialization
+     *
+     * @param hostUrl     hostUrl
+     * @param baseRequest baseRequest
+     * @return current user's information and contact information
+     * @throws IOException if the http response body can't be convert to {@link InitResponse}
+     */
+    InitResponse init(String hostUrl, BaseRequest baseRequest) throws IOException {
         String url = String.format(WECHAT_URL_INIT, hostUrl, RandomUtils.generateDateWithBitwiseNot());
+
+        CookieStore store = (CookieStore) ((StatefullRestTemplate) restTemplate).getHttpContext().getAttribute(HttpClientContext.COOKIE_STORE);
+        Date maxDate = new Date(Long.MAX_VALUE);
+        String domain = hostUrl.replaceAll("https://", "").replaceAll("/", "");
+        String[] cookieNames = new String[]{"MM_WX_NOTIFY_STATE", "MM_WX_SOUND_STATE"};
+        appendAdditionalCookies(store, cookieNames, domain, "/", maxDate);
+
         InitRequest request = new InitRequest();
         request.setBaseRequest(baseRequest);
         HttpHeaders customHeader = new HttpHeaders();
@@ -228,8 +283,17 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), InitResponse.class);
     }
 
-    //将网页端的状态通知手机端,例如消息已被读等
-    StatusNotifyResponse statusNotify(String hostUrl, BaseRequest baseRequest, String userName, int code) throws IOException, RestClientException {
+    /**
+     * Notify mobile side once certain actions have been taken on web side.
+     *
+     * @param hostUrl     hostUrl
+     * @param baseRequest baseRequest
+     * @param userName    the userName of the user
+     * @param code        {@link StatusNotifyCode}
+     * @return the http response body
+     * @throws IOException if the http response body can't be convert to {@link StatusNotifyResponse}
+     */
+    StatusNotifyResponse statusNotify(String hostUrl, BaseRequest baseRequest, String userName, int code) throws IOException {
         String rnd = String.valueOf(System.currentTimeMillis());
         final String url = String.format(WECHAT_URL_STATUS_NOTIFY, hostUrl);
         StatusNotifyRequest request = new StatusNotifyRequest();
@@ -247,7 +311,35 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), StatusNotifyResponse.class);
     }
 
-    GetContactResponse getContact(String hostUrl, String skey, long seq) throws IOException, RestClientException {
+    /**
+     * report stats to server
+     */
+    void statReport() {
+        final String url = WECHAT_URL_STATREPORT;
+        StatReportRequest request = new StatReportRequest();
+        BaseRequest baseRequest = new BaseRequest();
+        baseRequest.setUin("");
+        baseRequest.setSid("");
+        request.setBaseRequest(baseRequest);
+        request.setCount(0);
+        request.setList(new StatReport[0]);
+        HttpHeaders customHeader = new HttpHeaders();
+        customHeader.set(HttpHeaders.REFERER, WECHAT_URL_ENTRY + "/");
+        customHeader.setOrigin(WECHAT_URL_ENTRY);
+        HeaderUtils.assign(customHeader, postHeader);
+        restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
+    }
+
+    /**
+     * Get all the contacts. If the Seq it returns is greater than zero, it means at least one more request is required to fetch all contacts.
+     *
+     * @param hostUrl hostUrl
+     * @param skey    skey
+     * @param seq     seq
+     * @return contact information
+     * @throws IOException if the http response body can't be convert to {@link GetContactResponse}
+     */
+    GetContactResponse getContact(String hostUrl, String skey, long seq) throws IOException {
         long rnd = System.currentTimeMillis();
         final String url = String.format(WECHAT_URL_GET_CONTACT, hostUrl, rnd, seq, escape(skey));
         HttpHeaders customHeader = new HttpHeaders();
@@ -259,7 +351,16 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), GetContactResponse.class);
     }
 
-    BatchGetContactResponse batchGetContact(String hostUrl, BaseRequest baseRequest, ChatRoomDescription[] list) throws IOException, RestClientException {
+    /**
+     * Get all the members in the given chatrooms
+     *
+     * @param hostUrl     hostUrl
+     * @param baseRequest baseRequest
+     * @param list        chatroom information
+     * @return chatroom members information
+     * @throws IOException if the http response body can't be convert to {@link BatchGetContactResponse}
+     */
+    BatchGetContactResponse batchGetContact(String hostUrl, BaseRequest baseRequest, ChatRoomDescription[] list) throws IOException {
         long rnd = System.currentTimeMillis();
         String url = String.format(WECHAT_URL_BATCH_GET_CONTACT, hostUrl, rnd);
         BatchGetContactRequest request = new BatchGetContactRequest();
@@ -275,7 +376,19 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), BatchGetContactResponse.class);
     }
 
-    SyncCheckResponse syncCheck(String hostUrl, String uin, String sid, String skey, SyncKey syncKey) throws IOException, URISyntaxException, RestClientException {
+    /**
+     * Periodically request to server
+     *
+     * @param hostUrl hostUrl
+     * @param uin     uin
+     * @param sid     sid
+     * @param skey    skey
+     * @param syncKey syncKey
+     * @return synccheck response
+     * @throws IOException        if the http response body can't be convert to {@link SyncCheckResponse}
+     * @throws URISyntaxException if url is invalid
+     */
+    SyncCheckResponse syncCheck(String hostUrl, String uin, String sid, String skey, SyncKey syncKey) throws IOException, URISyntaxException {
         final Pattern pattern = Pattern.compile("window.synccheck=\\{retcode:\"(\\d+)\",selector:\"(\\d+)\"\\}");
         final String path = String.format(WECHAT_URL_SYNC_CHECK, hostUrl);
         URIBuilder builder = new URIBuilder(path);
@@ -305,8 +418,16 @@ class WechatHttpServiceInternal {
         }
     }
 
-    //msgtype =37,加我好友
-    SyncResponse sync(String hostUrl, SyncKey syncKey, BaseRequest baseRequest) throws IOException, RestClientException {
+    /**
+     * Sync with server to get new messages and contacts
+     *
+     * @param hostUrl     hostUrl
+     * @param syncKey     syncKey
+     * @param baseRequest baseRequest
+     * @return new messages and contacts
+     * @throws IOException if the http response body can't be convert to {@link SyncResponse}
+     */
+    SyncResponse sync(String hostUrl, SyncKey syncKey, BaseRequest baseRequest) throws IOException {
         final String url = String.format(WECHAT_URL_SYNC, hostUrl, baseRequest.getSid(), escape(baseRequest.getSkey()));
         SyncRequest request = new SyncRequest();
         request.setBaseRequest(baseRequest);
@@ -321,7 +442,7 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), SyncResponse.class);
     }
 
-    VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws IOException, URISyntaxException, RestClientException {
+    VerifyUserResponse acceptFriend(String hostUrl, BaseRequest baseRequest, String passTicket, VerifyUser[] verifyUsers) throws IOException, URISyntaxException {
         final int opCode = VerifyUserOPCode.VERIFYOK.getCode();
         final int[] sceneList = new int[]{AddScene.WEB.getCode()};
         final String path = String.format(WECHAT_URL_VERIFY_USER, hostUrl);
@@ -345,11 +466,11 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), VerifyUserResponse.class);
     }
 
-    void sendAppMsg() throws RestClientException {
+    void sendAppMsg() {
         throw new NotImplementedException();
     }
 
-    SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws IOException, RestClientException {
+    SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws IOException {
         final int scene = 0;
         final String rnd = String.valueOf(System.currentTimeMillis() * 10);
         final String url = String.format(WECHAT_URL_SEND_MSG, hostUrl);
@@ -369,11 +490,11 @@ class WechatHttpServiceInternal {
         return jsonMapper.readValue(responseEntity.getBody(), SendMsgResponse.class);
     }
 
-    void sendImageMsg() throws RestClientException {
+    void sendImageMsg() {
         throw new NotImplementedException();
     }
 
-    OpLogResponse setAlias(String hostUrl, BaseRequest baseRequest, String newAlias, String userName) throws IOException, RestClientException {
+    OpLogResponse setAlias(String hostUrl, BaseRequest baseRequest, String newAlias, String userName) throws IOException {
         final int cmdId = OpLogCmdId.MODREMARKNAME.getCode();
         final String url = String.format(WECHAT_URL_OP_LOG, hostUrl);
         OpLogRequest request = new OpLogRequest();
@@ -428,5 +549,15 @@ class WechatHttpServiceInternal {
 
     private String escape(String str) throws IOException {
         return URLEncoder.encode(str, StandardCharsets.UTF_8.toString());
+    }
+
+    private void appendAdditionalCookies(CookieStore store, String[] cookieNames, String domain, String path, Date expiryDate) {
+        for (int i = 0; i < cookieNames.length; i++) {
+            BasicClientCookie cookie = new BasicClientCookie("MM_WX_NOTIFY_STATE", "1");
+            cookie.setDomain(domain);
+            cookie.setPath(path);
+            cookie.setExpiryDate(expiryDate);
+            store.addCookie(cookie);
+        }
     }
 }

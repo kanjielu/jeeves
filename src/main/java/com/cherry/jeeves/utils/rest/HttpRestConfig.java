@@ -13,21 +13,12 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class HttpRestConfig {
 
-    private final CookieStore cookieStore = new BasicCookieStore();
-
     @Bean
     public RestTemplate restTemplate() {
+        CookieStore cookieStore = new BasicCookieStore();
         HttpContext httpContext = new BasicHttpContext();
         httpContext.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
         httpContext.setAttribute(HttpClientContext.REQUEST_CONFIG, RequestConfig.custom().setRedirectsEnabled(false).build());
-        return new StatefullRestTemplate(httpContext);
-    }
-
-    @Bean
-    public RestTemplate redirectableRestTemplate() {
-        HttpContext httpContext = new BasicHttpContext();
-        httpContext.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
-        httpContext.setAttribute(HttpClientContext.REQUEST_CONFIG, RequestConfig.custom().setRedirectsEnabled(true).build());
         return new StatefullRestTemplate(httpContext);
     }
 }
