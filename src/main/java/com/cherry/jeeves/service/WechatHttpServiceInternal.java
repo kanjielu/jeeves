@@ -367,9 +367,7 @@ class WechatHttpServiceInternal {
         request.setBaseRequest(baseRequest);
         request.setCount(list.length);
         request.setList(list);
-        HttpHeaders customHeader = new HttpHeaders();
-        customHeader.setOrigin(hostUrl);
-        customHeader.set(HttpHeaders.REFERER, hostUrl + "/");
+        HttpHeaders customHeader = createPostCustomHeader(hostUrl);
         HeaderUtils.assign(customHeader, postHeader);
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
@@ -433,9 +431,7 @@ class WechatHttpServiceInternal {
         request.setBaseRequest(baseRequest);
         request.setRr(-System.currentTimeMillis() / 1000);
         request.setSyncKey(syncKey);
-        HttpHeaders customHeader = new HttpHeaders();
-        customHeader.setOrigin(hostUrl);
-        customHeader.set(HttpHeaders.REFERER, hostUrl + "/");
+        HttpHeaders customHeader = createPostCustomHeader(hostUrl);
         HeaderUtils.assign(customHeader, postHeader);
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
@@ -470,7 +466,11 @@ class WechatHttpServiceInternal {
         throw new NotImplementedException();
     }
 
-    SendMsgResponse sendTextMsg(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws IOException {
+    void sendImageMsg() {
+        throw new NotImplementedException();
+    }
+
+    SendMsgResponse sendText(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws IOException {
         final int scene = 0;
         final String rnd = String.valueOf(System.currentTimeMillis() * 10);
         final String url = String.format(WECHAT_URL_SEND_MSG, hostUrl);
@@ -485,13 +485,11 @@ class WechatHttpServiceInternal {
         msg.setToUserName(toUserName);
         msg.setLocalID(rnd);
         request.setMsg(msg);
+        HttpHeaders customHeader = createPostCustomHeader(hostUrl);
+        HeaderUtils.assign(customHeader, postHeader);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.postHeader), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), SendMsgResponse.class);
-    }
-
-    void sendImageMsg() {
-        throw new NotImplementedException();
     }
 
     OpLogResponse setAlias(String hostUrl, BaseRequest baseRequest, String newAlias, String userName) throws IOException {
@@ -502,8 +500,10 @@ class WechatHttpServiceInternal {
         request.setCmdId(cmdId);
         request.setRemarkName(newAlias);
         request.setUserName(userName);
+        HttpHeaders customHeader = createPostCustomHeader(hostUrl);
+        HeaderUtils.assign(customHeader, postHeader);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.postHeader), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), OpLogResponse.class);
     }
 
@@ -520,8 +520,10 @@ class WechatHttpServiceInternal {
         }
         request.setMemberList(members);
         request.setTopic(topic);
+        HttpHeaders customHeader = createPostCustomHeader(hostUrl);
+        HeaderUtils.assign(customHeader, postHeader);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.postHeader), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), CreateChatRoomResponse.class);
     }
 
@@ -531,8 +533,10 @@ class WechatHttpServiceInternal {
         request.setBaseRequest(baseRequest);
         request.setChatRoomName(chatRoomUserName);
         request.setDelMemberList(userName);
+        HttpHeaders customHeader = createPostCustomHeader(hostUrl);
+        HeaderUtils.assign(customHeader, postHeader);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.postHeader), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), DeleteChatRoomMemberResponse.class);
     }
 
@@ -542,8 +546,10 @@ class WechatHttpServiceInternal {
         request.setBaseRequest(baseRequest);
         request.setChatRoomName(chatRoomUserName);
         request.setAddMemberList(userName);
+        HttpHeaders customHeader = createPostCustomHeader(hostUrl);
+        HeaderUtils.assign(customHeader, postHeader);
         ResponseEntity<String> responseEntity
-                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, this.postHeader), String.class);
+                = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(request, customHeader), String.class);
         return jsonMapper.readValue(responseEntity.getBody(), AddChatRoomMemberResponse.class);
     }
 
@@ -559,5 +565,12 @@ class WechatHttpServiceInternal {
             cookie.setExpiryDate(expiryDate);
             store.addCookie(cookie);
         }
+    }
+
+    private HttpHeaders createPostCustomHeader(String hostUrl) {
+        HttpHeaders customHeader = new HttpHeaders();
+        customHeader.setOrigin(hostUrl);
+        customHeader.set(HttpHeaders.REFERER, hostUrl + "/");
+        return customHeader;
     }
 }

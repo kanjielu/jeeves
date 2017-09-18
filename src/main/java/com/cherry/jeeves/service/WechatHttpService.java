@@ -32,8 +32,8 @@ public class WechatHttpService {
         wechatHttpServiceInternal.sendAppMsg();
     }
 
-    public void sendTextMsg(String userName, String content) throws IOException, RestClientException {
-        SendMsgResponse response = wechatHttpServiceInternal.sendTextMsg(cacheService.getHostUrl(), cacheService.getBaseRequest(), content, cacheService.getOwner().getUserName(), userName);
+    public void sendText(String userName, String content) throws IOException, RestClientException {
+        SendMsgResponse response = wechatHttpServiceInternal.sendText(cacheService.getHostUrl(), cacheService.getBaseRequest(), content, cacheService.getOwner().getUserName(), userName);
         WechatUtils.checkBaseResponse(response);
     }
 

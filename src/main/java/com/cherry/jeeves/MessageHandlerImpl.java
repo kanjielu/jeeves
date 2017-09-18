@@ -48,6 +48,6 @@ public class MessageHandlerImpl implements MessageHandler {
     }
 
     private void replyMessage(Message message) throws IOException {
-        wechatHttpService.sendTextMsg(message.getFromUserName(), WechatUtils.textDecode(message.getContent()));
+        wechatHttpService.sendText(message.getFromUserName(), WechatUtils.textDecode(message.getContent()));
     }
 }
