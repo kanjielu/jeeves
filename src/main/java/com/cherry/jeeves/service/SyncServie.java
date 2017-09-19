@@ -15,6 +15,7 @@ import com.cherry.jeeves.utils.WechatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -30,6 +31,9 @@ public class SyncServie {
     private WechatHttpServiceInternal wechatHttpService;
     @Autowired(required = false)
     private MessageHandler messageHandler;
+
+    @Value("${wechat.url.get_msg_img}")
+    private String WECHAT_URL_GET_MSG_IMG;
 
     @PostConstruct
     public void setMessageHandler() {
@@ -54,15 +58,23 @@ public class SyncServie {
                 SyncResponse syncResponse = sync();
                 for (Message message : syncResponse.getAddMsgList()) {
                     //私信
-                    if (message.getFromUserName() != null && message.getFromUserName().startsWith("@") && message.getMsgType() == MessageType.TEXT.getCode()) {
-                        if (messageHandler != null) {
-                            messageHandler.handlePrivateMessage(message);
+                    if (messageHandler != null && message.getFromUserName() != null && message.getFromUserName().startsWith("@")) {
+                        if (message.getMsgType() == MessageType.TEXT.getCode()) {
+                            messageHandler.handlePrivateTextMessage(message);
+                        } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
+                            String fullImageUrl = String.format(WECHAT_URL_GET_MSG_IMG, cacheService.getHostUrl(), message.getMsgId(), cacheService.getsKey());
+                            String thumbImageUrl = fullImageUrl + "&type=slave";
+                            messageHandler.handlePrivateImageMessage(message, thumbImageUrl, fullImageUrl);
                         }
                     }
                     //群聊
-                    else if (message.getFromUserName() != null && message.getFromUserName().startsWith("@@") && message.getMsgType() == MessageType.TEXT.getCode()) {
-                        if (messageHandler != null) {
-                            messageHandler.handleChatRoomMessage(message);
+                    else if (messageHandler != null && message.getFromUserName() != null && message.getFromUserName().startsWith("@@")) {
+                        if (message.getMsgType() == MessageType.TEXT.getCode()) {
+                            messageHandler.handleChatRoomTextMessage(message);
+                        } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
+                            String fullImageUrl = String.format(WECHAT_URL_GET_MSG_IMG, cacheService.getHostUrl(), message.getMsgId(), cacheService.getsKey());
+                            String thumbImageUrl = fullImageUrl + "&type=slave";
+                            messageHandler.handleChatRoomImageMessage(message, thumbImageUrl, fullImageUrl);
                         }
                     }
                     //好友邀请

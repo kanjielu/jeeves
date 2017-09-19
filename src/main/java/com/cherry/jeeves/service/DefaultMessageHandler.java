@@ -14,7 +14,7 @@ public class DefaultMessageHandler implements MessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMessageHandler.class);
 
     @Override
-    public void handleChatRoomMessage(Message message) {
+    public void handleChatRoomTextMessage(Message message) {
         logger.info("[*] chatroom message:");
         logger.info("[*] from chatroom: " + message.getFromUserName());
         logger.info("[*] from person: " + MessageUtils.getSenderOfChatRoomTextMessage(message.getContent()));
@@ -23,11 +23,21 @@ public class DefaultMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void handlePrivateMessage(Message message) throws IOException {
+    public void handleChatRoomImageMessage(Message message, String thumbImageUrl, String fullImageUrl) {
+
+    }
+
+    @Override
+    public void handlePrivateTextMessage(Message message) throws IOException {
         logger.info("[*] private message:");
         logger.info("[*] from: " + message.getFromUserName());
         logger.info("[*] to: " + message.getToUserName());
         logger.info("[*] content:" + WechatUtils.textDecode(message.getContent()));
+    }
+
+    @Override
+    public void handlePrivateImageMessage(Message message, String thumbImageUrl, String fullImageUrl) throws IOException {
+
     }
 
     @Override

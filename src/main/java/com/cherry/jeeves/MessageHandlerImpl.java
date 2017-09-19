@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 @Component
@@ -24,13 +25,26 @@ public class MessageHandlerImpl implements MessageHandler {
     private WechatHttpService wechatHttpService;
 
     @Override
-    public void handleChatRoomMessage(Message message) {
+    public void handleChatRoomTextMessage(Message message) {
 
     }
 
     @Override
-    public void handlePrivateMessage(Message message) throws IOException {
+    public void handleChatRoomImageMessage(Message message, String thumbImageUrl, String fullImageUrl) {
+
+    }
+
+    @Override
+    public void handlePrivateTextMessage(Message message) throws IOException {
         replyMessage(message);
+    }
+
+    @Override
+    public void handlePrivateImageMessage(Message message, String thumbImageUrl, String fullImageUrl) throws IOException {
+//        byte[] data = wechatHttpService.downloadImage(thumbImageUrl);
+//        FileOutputStream fos = new FileOutputStream("thumb.jpg");
+//        fos.write(data);
+//        fos.close();
     }
 
     @Override

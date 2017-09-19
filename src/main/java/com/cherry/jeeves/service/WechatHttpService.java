@@ -87,4 +87,8 @@ public class WechatHttpService {
         }
         chatRoom.getMemberList().addAll(response.getMemberList());
     }
+
+    public byte[] downloadImage(String url) {
+        return wechatHttpServiceInternal.downloadImage(url);
+    }
 }
