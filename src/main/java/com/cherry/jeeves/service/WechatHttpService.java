@@ -7,9 +7,9 @@ import com.cherry.jeeves.exception.WechatException;
 import com.cherry.jeeves.utils.WechatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 @Component
@@ -20,33 +20,42 @@ public class WechatHttpService {
     @Autowired
     private CacheService cacheService;
 
-    public void logout() throws IOException, RestClientException {
+    public void logout() throws IOException {
         wechatHttpServiceInternal.logout(cacheService.getHostUrl(), cacheService.getsKey());
     }
 
-    public GetContactResponse getContact(long seq) throws IOException, RestClientException {
-        return wechatHttpServiceInternal.getContact(cacheService.getHostUrl(), cacheService.getsKey(), seq);
+    public Set<Contact> getContact() throws IOException {
+        Set<Contact> contacts = new HashSet<>();
+        long seq = 0;
+        do {
+            GetContactResponse response = wechatHttpServiceInternal.getContact(cacheService.getHostUrl(), cacheService.getsKey(), seq);
+            WechatUtils.checkBaseResponse(response);
+            seq = response.getSeq();
+            contacts.addAll(response.getMemberList());
+        }
+        while (seq > 0);
+        return contacts;
     }
 
-    public void sendAppMsg() throws RestClientException {
-        wechatHttpServiceInternal.sendAppMsg();
-    }
-
-    public void sendText(String userName, String content) throws IOException, RestClientException {
+    public void sendText(String userName, String content) throws IOException {
         SendMsgResponse response = wechatHttpServiceInternal.sendText(cacheService.getHostUrl(), cacheService.getBaseRequest(), content, cacheService.getOwner().getUserName(), userName);
         WechatUtils.checkBaseResponse(response);
     }
 
-    public void sendImageMsg() throws RestClientException {
+    public void sendImageMsg() {
         wechatHttpServiceInternal.sendImageMsg();
     }
 
-    public void setAlias(String userName, String newAlias) throws IOException, RestClientException {
+    public void sendAppMsg() {
+        wechatHttpServiceInternal.sendAppMsg();
+    }
+
+    public void setAlias(String userName, String newAlias) throws IOException {
         OpLogResponse response = wechatHttpServiceInternal.setAlias(cacheService.getHostUrl(), cacheService.getBaseRequest(), newAlias, userName);
         WechatUtils.checkBaseResponse(response);
     }
 
-    public Set<Contact> batchGetContact(ChatRoomDescription[] list) throws IOException, RestClientException {
+    public Set<Contact> batchGetContact(ChatRoomDescription[] list) throws IOException {
         BatchGetContactResponse response = wechatHttpServiceInternal.batchGetContact(cacheService.getHostUrl(), cacheService.getBaseRequest(), list);
         WechatUtils.checkBaseResponse(response);
         return response.getContactList();
