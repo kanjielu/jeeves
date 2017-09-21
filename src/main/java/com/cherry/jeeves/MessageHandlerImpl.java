@@ -1,8 +1,6 @@
 package com.cherry.jeeves;
 
-import com.cherry.jeeves.domain.shared.FriendInvitationContent;
-import com.cherry.jeeves.domain.shared.Message;
-import com.cherry.jeeves.domain.shared.RecommendInfo;
+import com.cherry.jeeves.domain.shared.*;
 import com.cherry.jeeves.service.MessageHandler;
 import com.cherry.jeeves.service.WechatHttpService;
 import com.cherry.jeeves.utils.WechatUtils;
@@ -14,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 public class MessageHandlerImpl implements MessageHandler {
@@ -25,22 +23,24 @@ public class MessageHandlerImpl implements MessageHandler {
     private WechatHttpService wechatHttpService;
 
     @Override
-    public void handleChatRoomTextMessage(Message message) {
+    public void onReceivingChatRoomTextMessage(Message message) {
 
     }
 
     @Override
-    public void handleChatRoomImageMessage(Message message, String thumbImageUrl, String fullImageUrl) {
+    public void onReceivingChatRoomImageMessage(Message message, String thumbImageUrl, String fullImageUrl) {
 
     }
 
     @Override
-    public void handlePrivateTextMessage(Message message) throws IOException {
-        replyMessage(message);
+    public void onReceivingPrivateTextMessage(Message message) throws IOException {
+//        将原文回复给对方
+//        replyMessage(message);
     }
 
     @Override
-    public void handlePrivateImageMessage(Message message, String thumbImageUrl, String fullImageUrl) throws IOException {
+    public void onReceivingPrivateImageMessage(Message message, String thumbImageUrl, String fullImageUrl) throws IOException {
+//        将图片保存在本地
 //        byte[] data = wechatHttpService.downloadImage(thumbImageUrl);
 //        FileOutputStream fos = new FileOutputStream("thumb.jpg");
 //        fos.write(data);
@@ -48,17 +48,54 @@ public class MessageHandlerImpl implements MessageHandler {
     }
 
     @Override
-    public boolean handleFriendInvitation(RecommendInfo info) throws IOException {
+    public boolean onReceivingFriendInvitation(RecommendInfo info) throws IOException {
+//        默认接收所有的邀请
         return true;
     }
 
     @Override
     public void postAcceptFriendInvitation(Message message) throws IOException {
-        //将该用户的微信号设置成他的昵称
+//        将该用户的微信号设置成他的昵称
         String content = StringEscapeUtils.unescapeXml(message.getContent());
         ObjectMapper xmlMapper = new XmlMapper();
         FriendInvitationContent friendInvitationContent = xmlMapper.readValue(content, FriendInvitationContent.class);
         wechatHttpService.setAlias(message.getRecommendInfo().getUserName(), friendInvitationContent.getFromusername());
+    }
+
+    @Override
+    public void onChatRoomMembersChanged(Contact chatRoom, Set<ChatRoomMember> membersJoined, Set<ChatRoomMember> membersLeft) {
+
+    }
+
+
+    @Override
+    public void onNewChatRoomsFound(Set<Contact> chatRooms) {
+
+    }
+
+    @Override
+    public void onChatRoomsDeleted(Set<Contact> chatRooms) {
+
+    }
+
+    @Override
+    public void onNewFriendsFound(Set<Contact> contacts) {
+
+    }
+
+    @Override
+    public void onFriendsDeleted(Set<Contact> contacts) {
+
+    }
+
+    @Override
+    public void onNewMediaPlatformsFound(Set<Contact> mps) {
+
+    }
+
+    @Override
+    public void onMediaPlatformsDeleted(Set<Contact> mps) {
+
     }
 
     private void replyMessage(Message message) throws IOException {
