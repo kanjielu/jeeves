@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Set;
 
-@Component
+//@Component
 public class MessageHandlerImpl implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageHandlerImpl.class);
@@ -35,7 +35,7 @@ public class MessageHandlerImpl implements MessageHandler {
     @Override
     public void onReceivingPrivateTextMessage(Message message) throws IOException {
 //        将原文回复给对方
-//        replyMessage(message);
+        replyMessage(message);
     }
 
     @Override
@@ -66,7 +66,6 @@ public class MessageHandlerImpl implements MessageHandler {
     public void onChatRoomMembersChanged(Contact chatRoom, Set<ChatRoomMember> membersJoined, Set<ChatRoomMember> membersLeft) {
 
     }
-
 
     @Override
     public void onNewChatRoomsFound(Set<Contact> chatRooms) {

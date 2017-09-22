@@ -6,6 +6,10 @@ public enum Selector {
      */
     NORMAL(0),
     /**
+     * 包含但不仅限于新增群
+     */
+    UNKNOWN1(1),
+    /**
      * 新消息
      */
     NEW_MESSAGE(2),

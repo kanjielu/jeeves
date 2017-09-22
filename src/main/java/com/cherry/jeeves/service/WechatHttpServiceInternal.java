@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -32,6 +33,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -118,8 +121,10 @@ class WechatHttpServiceInternal {
 
     /**
      * Open the entry page.
+     *
+     * @param retryTimes retry times of qr scan
      */
-    void open() {
+    void open(int retryTimes) {
         final String url = WECHAT_URL_ENTRY;
         HttpHeaders customHeader = new HttpHeaders();
         customHeader.setPragma("no-cache");
@@ -132,8 +137,13 @@ class WechatHttpServiceInternal {
         CookieStore store = (CookieStore) ((StatefullRestTemplate) restTemplate).getHttpContext().getAttribute(HttpClientContext.COOKIE_STORE);
         Date maxDate = new Date(Long.MAX_VALUE);
         String domain = WECHAT_URL_ENTRY.replaceAll("https://", "").replaceAll("/", "");
-        String[] cookieNames = new String[]{"MM_WX_NOTIFY_STATE", "MM_WX_SOUND_STATE"};
-        appendAdditionalCookies(store, cookieNames, domain, "/", maxDate);
+        Map<String, String> cookies = new HashMap<>(3);
+        cookies.put("MM_WX_NOTIFY_STATE", "1");
+        cookies.put("MM_WX_SOUND_STATE", "1");
+        if (retryTimes > 0) {
+            cookies.put("refreshTimes", String.valueOf(retryTimes));
+        }
+        appendAdditionalCookies(store, cookies, domain, "/", maxDate);
         //It's now at entry page.
         this.originValue = WECHAT_URL_ENTRY;
         this.refererValue = WECHAT_URL_ENTRY.replaceAll("/$", "");
@@ -274,9 +284,10 @@ class WechatHttpServiceInternal {
         CookieStore store = (CookieStore) ((StatefullRestTemplate) restTemplate).getHttpContext().getAttribute(HttpClientContext.COOKIE_STORE);
         Date maxDate = new Date(Long.MAX_VALUE);
         String domain = hostUrl.replaceAll("https://", "").replaceAll("/", "");
-        String[] cookieNames = new String[]{"MM_WX_NOTIFY_STATE", "MM_WX_SOUND_STATE"};
-        appendAdditionalCookies(store, cookieNames, domain, "/", maxDate);
-
+        Map<String, String> cookies = new HashMap<>(3);
+        cookies.put("MM_WX_NOTIFY_STATE", "1");
+        cookies.put("MM_WX_SOUND_STATE", "1");
+        appendAdditionalCookies(store, cookies, domain, "/", maxDate);
         InitRequest request = new InitRequest();
         request.setBaseRequest(baseRequest);
         HttpHeaders customHeader = new HttpHeaders();
@@ -573,14 +584,15 @@ class WechatHttpServiceInternal {
         return URLEncoder.encode(str, StandardCharsets.UTF_8.toString());
     }
 
-    private void appendAdditionalCookies(CookieStore store, String[] cookieNames, String domain, String path, Date expiryDate) {
-        for (int i = 0; i < cookieNames.length; i++) {
-            BasicClientCookie cookie = new BasicClientCookie("MM_WX_NOTIFY_STATE", "1");
+    private void appendAdditionalCookies(CookieStore store, Map<String, String> cookies, String domain, String path, Date expiryDate) {
+        Assert.notNull(cookies);
+        cookies.forEach((key, value) -> {
+            BasicClientCookie cookie = new BasicClientCookie(key, value);
             cookie.setDomain(domain);
             cookie.setPath(path);
             cookie.setExpiryDate(expiryDate);
             store.addCookie(cookie);
-        }
+        });
     }
 
     private HttpHeaders createPostCustomHeader() {

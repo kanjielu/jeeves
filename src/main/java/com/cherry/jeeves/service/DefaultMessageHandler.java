@@ -27,7 +27,7 @@ public class DefaultMessageHandler implements MessageHandler {
 
     @Override
     public void onReceivingChatRoomImageMessage(Message message, String thumbImageUrl, String fullImageUrl) {
-
+        logger.info("onReceivingChatRoomImageMessage");
     }
 
     @Override
@@ -40,7 +40,7 @@ public class DefaultMessageHandler implements MessageHandler {
 
     @Override
     public void onReceivingPrivateImageMessage(Message message, String thumbImageUrl, String fullImageUrl) throws IOException {
-
+        logger.info("onReceivingPrivateImageMessage");
     }
 
     @Override
@@ -52,42 +52,41 @@ public class DefaultMessageHandler implements MessageHandler {
 
     @Override
     public void postAcceptFriendInvitation(Message message) throws IOException {
-
+        logger.info("postAcceptFriendInvitation");
     }
 
     @Override
     public void onChatRoomMembersChanged(Contact chatRoom, Set<ChatRoomMember> membersJoined, Set<ChatRoomMember> membersLeft) {
-
+        logger.info("onChatRoomMembersChanged");
     }
-
 
     @Override
     public void onNewChatRoomsFound(Set<Contact> chatRooms) {
-
+        logger.info("onNewChatRoomsFound");
     }
 
     @Override
     public void onChatRoomsDeleted(Set<Contact> chatRooms) {
-
+        logger.info("onChatRoomsDeleted");
     }
 
     @Override
     public void onNewFriendsFound(Set<Contact> contacts) {
-
+        logger.info("onNewFriendsFound");
     }
 
     @Override
     public void onFriendsDeleted(Set<Contact> contacts) {
-
+        logger.info("onFriendsDeleted");
     }
 
     @Override
     public void onNewMediaPlatformsFound(Set<Contact> mps) {
-
+        logger.info("onNewMediaPlatformsFound");
     }
 
     @Override
     public void onMediaPlatformsDeleted(Set<Contact> mps) {
-
+        logger.info("onMediaPlatformsDeleted");
     }
 }

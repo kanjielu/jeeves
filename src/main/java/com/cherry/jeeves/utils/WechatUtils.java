@@ -24,7 +24,7 @@ public class WechatUtils {
         if (contact == null) {
             throw new IllegalArgumentException("contact");
         }
-        return contact.getUserName().startsWith("@") && ((contact.getVerifyFlag() & 8) == 0);
+        return contact.getUserName().startsWith("@") && !contact.getUserName().startsWith("@@") && ((contact.getVerifyFlag() & 8) == 0);
     }
 
     public static boolean isChatRoom(Contact contact) {

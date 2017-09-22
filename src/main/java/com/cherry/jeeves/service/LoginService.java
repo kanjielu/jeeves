@@ -37,10 +37,16 @@ public class LoginService {
     @Value("${jeeves.auto-relogin-when-qrcode-expired}")
     private boolean AUTO_RELOGIN_WHEN_QRCODE_EXPIRED;
 
+    @Value("${jeeves.max-qr-refresh-times}")
+    private int MAX_QR_REFRESH_TIMES;
+
+    private int qrRefreshTimes = 0;
+
     public void login() {
         try {
             //0 entry
-            wechatHttpServiceInternal.open();
+            wechatHttpServiceInternal.open(qrRefreshTimes);
+            logger.info("[0] entry completed");
             //1 uuid
             String uuid = wechatHttpServiceInternal.getUUID();
             cacheService.setUuid(uuid);
@@ -160,7 +166,7 @@ public class LoginService {
         } catch (IOException | NotFoundException | WriterException | URISyntaxException ex) {
             throw new WechatException(ex);
         } catch (WechatQRExpiredException ex) {
-            if (AUTO_RELOGIN_WHEN_QRCODE_EXPIRED) {
+            if (AUTO_RELOGIN_WHEN_QRCODE_EXPIRED && qrRefreshTimes <= MAX_QR_REFRESH_TIMES) {
                 login();
             } else {
                 throw new WechatException(ex);

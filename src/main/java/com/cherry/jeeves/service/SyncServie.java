@@ -60,6 +60,8 @@ public class SyncServie {
                 sync();
             } else if (selector == Selector.CONTACT_UPDATED.getCode()) {
                 sync();
+            } else if (selector == Selector.UNKNOWN1.getCode()) {
+                sync();
             } else if (selector == Selector.UNKNOWN6.getCode()) {
                 sync();
             } else if (selector != Selector.NORMAL.getCode()) {
@@ -154,54 +156,60 @@ public class SyncServie {
         }
 
         //individual
-        Set<Contact> existingIndividuals = cacheService.getIndividuals();
-        Set<Contact> newIndividuals = individuals.stream().filter(x -> !existingIndividuals.contains(x)).collect(Collectors.toSet());
-        individuals.forEach(x -> {
-            existingIndividuals.remove(x);
-            existingIndividuals.add(x);
-        });
-        if (messageHandler != null) {
-            messageHandler.onNewFriendsFound(newIndividuals);
+        if (individuals.size() > 0) {
+            Set<Contact> existingIndividuals = cacheService.getIndividuals();
+            Set<Contact> newIndividuals = individuals.stream().filter(x -> !existingIndividuals.contains(x)).collect(Collectors.toSet());
+            individuals.forEach(x -> {
+                existingIndividuals.remove(x);
+                existingIndividuals.add(x);
+            });
+            if (messageHandler != null) {
+                messageHandler.onNewFriendsFound(newIndividuals);
+            }
         }
         //chatroom
-        Set<Contact> existingChatRooms = cacheService.getChatRooms();
-        Set<Contact> newChatRooms = new HashSet<>();
-        Set<Contact> modifiedChatRooms = new HashSet<>();
-        for (Contact chatRoom : chatRooms) {
-            if (existingChatRooms.contains(chatRoom)) {
-                modifiedChatRooms.add(chatRoom);
-            } else {
-                newChatRooms.add(chatRoom);
+        if (chatRooms.size() > 0) {
+            Set<Contact> existingChatRooms = cacheService.getChatRooms();
+            Set<Contact> newChatRooms = new HashSet<>();
+            Set<Contact> modifiedChatRooms = new HashSet<>();
+            for (Contact chatRoom : chatRooms) {
+                if (existingChatRooms.contains(chatRoom)) {
+                    modifiedChatRooms.add(chatRoom);
+                } else {
+                    newChatRooms.add(chatRoom);
+                }
             }
-        }
-        existingChatRooms.addAll(newChatRooms);
-        if (messageHandler != null) {
-            messageHandler.onNewChatRoomsFound(newChatRooms);
-        }
-        for (Contact chatRoom : modifiedChatRooms) {
-            Contact existingChatRoom = existingChatRooms.stream().filter(x -> x.getUserName().equals(chatRoom.getUserName())).findFirst().orElse(null);
-            if (existingChatRoom == null) {
-                continue;
-            }
-            existingChatRooms.remove(existingChatRoom);
-            existingChatRooms.add(chatRoom);
+            existingChatRooms.addAll(newChatRooms);
             if (messageHandler != null) {
-                Set<ChatRoomMember> oldMembers = existingChatRoom.getMemberList();
-                Set<ChatRoomMember> newMembers = chatRoom.getMemberList();
-                Set<ChatRoomMember> joined = newMembers.stream().filter(x -> !oldMembers.contains(x)).collect(Collectors.toSet());
-                Set<ChatRoomMember> left = oldMembers.stream().filter(x -> !newMembers.contains(x)).collect(Collectors.toSet());
-                messageHandler.onChatRoomMembersChanged(chatRoom, joined, left);
+                messageHandler.onNewChatRoomsFound(newChatRooms);
+            }
+            for (Contact chatRoom : modifiedChatRooms) {
+                Contact existingChatRoom = existingChatRooms.stream().filter(x -> x.getUserName().equals(chatRoom.getUserName())).findFirst().orElse(null);
+                if (existingChatRoom == null) {
+                    continue;
+                }
+                existingChatRooms.remove(existingChatRoom);
+                existingChatRooms.add(chatRoom);
+                if (messageHandler != null) {
+                    Set<ChatRoomMember> oldMembers = existingChatRoom.getMemberList();
+                    Set<ChatRoomMember> newMembers = chatRoom.getMemberList();
+                    Set<ChatRoomMember> joined = newMembers.stream().filter(x -> !oldMembers.contains(x)).collect(Collectors.toSet());
+                    Set<ChatRoomMember> left = oldMembers.stream().filter(x -> !newMembers.contains(x)).collect(Collectors.toSet());
+                    messageHandler.onChatRoomMembersChanged(chatRoom, joined, left);
+                }
             }
         }
-        //media platform
-        Set<Contact> existingPlatforms = cacheService.getMediaPlatforms();
-        Set<Contact> newMediaPlatforms = existingPlatforms.stream().filter(x -> !existingPlatforms.contains(x)).collect(Collectors.toSet());
-        mediaPlatforms.forEach(x -> {
-            existingPlatforms.remove(x);
-            existingPlatforms.add(x);
-        });
-        if (messageHandler != null) {
-            messageHandler.onNewMediaPlatformsFound(newMediaPlatforms);
+        if (mediaPlatforms.size() > 0) {
+            //media platform
+            Set<Contact> existingPlatforms = cacheService.getMediaPlatforms();
+            Set<Contact> newMediaPlatforms = existingPlatforms.stream().filter(x -> !existingPlatforms.contains(x)).collect(Collectors.toSet());
+            mediaPlatforms.forEach(x -> {
+                existingPlatforms.remove(x);
+                existingPlatforms.add(x);
+            });
+            if (messageHandler != null) {
+                messageHandler.onNewMediaPlatformsFound(newMediaPlatforms);
+            }
         }
     }
 

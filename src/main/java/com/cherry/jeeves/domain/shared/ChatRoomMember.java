@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ChatRoomMember {
     @JsonProperty
-    private int Uin;
+    private long Uin;
     @JsonProperty
     private String UserName;
     @JsonProperty
@@ -28,11 +28,11 @@ public class ChatRoomMember {
     @JsonProperty
     private String Keyword;
 
-    public int getUin() {
+    public long getUin() {
         return Uin;
     }
 
-    public void setUin(int uin) {
+    public void setUin(long uin) {
         Uin = uin;
     }
 

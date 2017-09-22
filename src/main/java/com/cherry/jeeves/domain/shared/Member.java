@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Member {
     @JsonProperty
-    private int Uin;
+    private long Uin;
     @JsonProperty
     private String UserName;
     @JsonProperty
@@ -40,11 +40,11 @@ public class Member {
     @JsonProperty
     private int SnsFlag;
 
-    public int getUin() {
+    public long getUin() {
         return Uin;
     }
 
-    public void setUin(int uin) {
+    public void setUin(long uin) {
         Uin = uin;
     }
 
