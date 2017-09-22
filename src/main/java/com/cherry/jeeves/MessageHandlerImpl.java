@@ -4,7 +4,6 @@ import com.cherry.jeeves.domain.shared.*;
 import com.cherry.jeeves.service.MessageHandler;
 import com.cherry.jeeves.service.WechatHttpService;
 import com.cherry.jeeves.utils.MessageUtils;
-import com.cherry.jeeves.utils.WechatUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.commons.text.StringEscapeUtils;
@@ -31,7 +30,7 @@ public class MessageHandlerImpl implements MessageHandler {
         logger.info("from chatroom: " + message.getFromUserName());
         logger.info("from person: " + MessageUtils.getSenderOfChatRoomTextMessage(message.getContent()));
         logger.info("to: " + message.getToUserName());
-        logger.info("content:" + WechatUtils.textDecode(MessageUtils.getChatRoomTextMessageContent(message.getContent())));
+        logger.info("content:" + MessageUtils.getChatRoomTextMessageContent(message.getContent()));
     }
 
     @Override
@@ -46,7 +45,7 @@ public class MessageHandlerImpl implements MessageHandler {
         logger.info("onReceivingPrivateTextMessage");
         logger.info("from: " + message.getFromUserName());
         logger.info("to: " + message.getToUserName());
-        logger.info("content:" + WechatUtils.textDecode(message.getContent()));
+        logger.info("content:" + message.getContent());
 //        将原文回复给对方
 //        replyMessage(message);
     }
@@ -66,7 +65,7 @@ public class MessageHandlerImpl implements MessageHandler {
     @Override
     public boolean onReceivingFriendInvitation(RecommendInfo info) throws IOException {
         logger.info("onReceivingFriendInvitation");
-        logger.info("recommendinfo content:" + WechatUtils.textDecode(info.getContent()));
+        logger.info("recommendinfo content:" + info.getContent());
 //        默认接收所有的邀请
         return true;
     }
@@ -134,6 +133,6 @@ public class MessageHandlerImpl implements MessageHandler {
     }
 
     private void replyMessage(Message message) throws IOException {
-        wechatHttpService.sendText(message.getFromUserName(), WechatUtils.textDecode(message.getContent()));
+        wechatHttpService.sendText(message.getFromUserName(), message.getContent());
     }
 }

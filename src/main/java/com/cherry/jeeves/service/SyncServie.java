@@ -105,7 +105,9 @@ public class SyncServie {
         SyncResponse syncResponse = sync();
         for (Message message : syncResponse.getAddMsgList()) {
             //私信
-            if (messageHandler != null && message.getFromUserName() != null && message.getFromUserName().startsWith("@")) {
+            if (messageHandler != null && message.getFromUserName() != null
+                    && message.getFromUserName().startsWith("@")
+                    && !message.getFromUserName().startsWith("@@")) {
                 if (message.getMsgType() == MessageType.TEXT.getCode()) {
                     messageHandler.onReceivingPrivateTextMessage(message);
                 } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
@@ -195,7 +197,9 @@ public class SyncServie {
                     Set<ChatRoomMember> newMembers = chatRoom.getMemberList();
                     Set<ChatRoomMember> joined = newMembers.stream().filter(x -> !oldMembers.contains(x)).collect(Collectors.toSet());
                     Set<ChatRoomMember> left = oldMembers.stream().filter(x -> !newMembers.contains(x)).collect(Collectors.toSet());
-                    messageHandler.onChatRoomMembersChanged(chatRoom, joined, left);
+                    if (joined.size() > 0 || left.size() > 0) {
+                        messageHandler.onChatRoomMembersChanged(chatRoom, joined, left);
+                    }
                 }
             }
         }
