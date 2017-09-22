@@ -163,7 +163,7 @@ public class SyncServie {
                 existingIndividuals.remove(x);
                 existingIndividuals.add(x);
             });
-            if (messageHandler != null) {
+            if (messageHandler != null && newIndividuals.size() > 0) {
                 messageHandler.onNewFriendsFound(newIndividuals);
             }
         }
@@ -180,7 +180,7 @@ public class SyncServie {
                 }
             }
             existingChatRooms.addAll(newChatRooms);
-            if (messageHandler != null) {
+            if (messageHandler != null && newChatRooms.size() > 0) {
                 messageHandler.onNewChatRoomsFound(newChatRooms);
             }
             for (Contact chatRoom : modifiedChatRooms) {
@@ -207,7 +207,7 @@ public class SyncServie {
                 existingPlatforms.remove(x);
                 existingPlatforms.add(x);
             });
-            if (messageHandler != null) {
+            if (messageHandler != null && newMediaPlatforms.size() > 0) {
                 messageHandler.onNewMediaPlatformsFound(newMediaPlatforms);
             }
         }

@@ -4,8 +4,6 @@ import com.cherry.jeeves.domain.shared.ChatRoomMember;
 import com.cherry.jeeves.domain.shared.Contact;
 import com.cherry.jeeves.domain.shared.Message;
 import com.cherry.jeeves.domain.shared.RecommendInfo;
-import com.cherry.jeeves.utils.MessageUtils;
-import com.cherry.jeeves.utils.WechatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +16,7 @@ public class DefaultMessageHandler implements MessageHandler {
 
     @Override
     public void onReceivingChatRoomTextMessage(Message message) {
-        logger.info("[*] chatroom message:");
-        logger.info("[*] from chatroom: " + message.getFromUserName());
-        logger.info("[*] from person: " + MessageUtils.getSenderOfChatRoomTextMessage(message.getContent()));
-        logger.info("[*] to: " + message.getToUserName());
-        logger.info("[*] content:" + WechatUtils.textDecode(MessageUtils.getChatRoomTextMessageContent(message.getContent())));
+        logger.info("onReceivingChatRoomTextMessage");
     }
 
     @Override
@@ -32,10 +26,7 @@ public class DefaultMessageHandler implements MessageHandler {
 
     @Override
     public void onReceivingPrivateTextMessage(Message message) throws IOException {
-        logger.info("[*] private message:");
-        logger.info("[*] from: " + message.getFromUserName());
-        logger.info("[*] to: " + message.getToUserName());
-        logger.info("[*] content:" + WechatUtils.textDecode(message.getContent()));
+        logger.info("onReceivingPrivateTextMessage");
     }
 
     @Override
@@ -45,8 +36,7 @@ public class DefaultMessageHandler implements MessageHandler {
 
     @Override
     public boolean onReceivingFriendInvitation(RecommendInfo info) throws IOException {
-        logger.info("[*] friend invitation message:");
-        logger.info("[*] recommendinfo content:" + WechatUtils.textDecode(info.getContent()));
+        logger.info("onReceivingFriendInvitation");
         return false;
     }
 
