@@ -12,7 +12,7 @@ public class ChatRoomMember {
     @JsonProperty
     private String NickName;
     @JsonProperty
-    private int AttrStatus;
+    private long AttrStatus;
     @JsonProperty
     private String PYInitial;
     @JsonProperty
@@ -22,7 +22,7 @@ public class ChatRoomMember {
     @JsonProperty
     private String RemarkPYQuanPin;
     @JsonProperty
-    private int MemberStatus;
+    private long MemberStatus;
     @JsonProperty
     private String DisplayName;
     @JsonProperty
@@ -52,11 +52,11 @@ public class ChatRoomMember {
         NickName = nickName;
     }
 
-    public int getAttrStatus() {
+    public long getAttrStatus() {
         return AttrStatus;
     }
 
-    public void setAttrStatus(int attrStatus) {
+    public void setAttrStatus(long attrStatus) {
         AttrStatus = attrStatus;
     }
 
@@ -92,11 +92,11 @@ public class ChatRoomMember {
         RemarkPYQuanPin = remarkPYQuanPin;
     }
 
-    public int getMemberStatus() {
+    public long getMemberStatus() {
         return MemberStatus;
     }
 
-    public void setMemberStatus(int memberStatus) {
+    public void setMemberStatus(long memberStatus) {
         MemberStatus = memberStatus;
     }
 

@@ -18,7 +18,7 @@ public class FriendInvitationContent {
     @JacksonXmlProperty
     private String shortpy;
     @JacksonXmlProperty
-    private int imagestatus;
+    private long imagestatus;
     @JacksonXmlProperty
     private int scene;
     @JacksonXmlProperty
@@ -34,13 +34,13 @@ public class FriendInvitationContent {
     @JacksonXmlProperty
     private String alias;
     @JacksonXmlProperty
-    private int albumflag;
+    private long albumflag;
     @JacksonXmlProperty
     private int albumstyle;
     @JacksonXmlProperty
     private String albumbgimgid;
     @JacksonXmlProperty
-    private int snsflag;
+    private long snsflag;
     @JacksonXmlProperty
     private String snsbgimgid;
     @JacksonXmlProperty
@@ -98,11 +98,11 @@ public class FriendInvitationContent {
         this.shortpy = shortpy;
     }
 
-    public int getImagestatus() {
+    public long getImagestatus() {
         return imagestatus;
     }
 
-    public void setImagestatus(int imagestatus) {
+    public void setImagestatus(long imagestatus) {
         this.imagestatus = imagestatus;
     }
 
@@ -162,11 +162,11 @@ public class FriendInvitationContent {
         this.alias = alias;
     }
 
-    public int getAlbumflag() {
+    public long getAlbumflag() {
         return albumflag;
     }
 
-    public void setAlbumflag(int albumflag) {
+    public void setAlbumflag(long albumflag) {
         this.albumflag = albumflag;
     }
 
@@ -186,11 +186,11 @@ public class FriendInvitationContent {
         this.albumbgimgid = albumbgimgid;
     }
 
-    public int getSnsflag() {
+    public long getSnsflag() {
         return snsflag;
     }
 
-    public void setSnsflag(int snsflag) {
+    public void setSnsflag(long snsflag) {
         this.snsflag = snsflag;
     }
 

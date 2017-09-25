@@ -20,9 +20,9 @@ public class Profile {
     @JsonProperty
     private Object BindMobile;
     @JsonProperty
-    private int BindUin;
+    private long BindUin;
     @JsonProperty
-    private int Status;
+    private long Status;
     @JsonProperty
     private int Sex;
     @JsonProperty
@@ -76,19 +76,19 @@ public class Profile {
         BindMobile = bindMobile;
     }
 
-    public int getBindUin() {
+    public long getBindUin() {
         return BindUin;
     }
 
-    public void setBindUin(int bindUin) {
+    public void setBindUin(long bindUin) {
         BindUin = bindUin;
     }
 
-    public int getStatus() {
+    public long getStatus() {
         return Status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(long status) {
         Status = status;
     }
 

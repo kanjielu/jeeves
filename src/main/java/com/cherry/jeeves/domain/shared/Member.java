@@ -36,9 +36,9 @@ public class Member {
     @JsonProperty
     private int StarFriend;
     @JsonProperty
-    private int AppAccountFlag;
+    private long AppAccountFlag;
     @JsonProperty
-    private int SnsFlag;
+    private long SnsFlag;
 
     public long getUin() {
         return Uin;
@@ -160,19 +160,19 @@ public class Member {
         StarFriend = starFriend;
     }
 
-    public int getAppAccountFlag() {
+    public long getAppAccountFlag() {
         return AppAccountFlag;
     }
 
-    public void setAppAccountFlag(int appAccountFlag) {
+    public void setAppAccountFlag(long appAccountFlag) {
         AppAccountFlag = appAccountFlag;
     }
 
-    public int getSnsFlag() {
+    public long getSnsFlag() {
         return SnsFlag;
     }
 
-    public void setSnsFlag(int snsFlag) {
+    public void setSnsFlag(long snsFlag) {
         SnsFlag = snsFlag;
     }
 }

@@ -16,9 +16,9 @@ public class Message {
     @JsonProperty
     private String Content;
     @JsonProperty
-    private int Status;
+    private long Status;
     @JsonProperty
-    private int ImgStatus;
+    private long ImgStatus;
     @JsonProperty
     private long CreateTime;
     @JsonProperty
@@ -60,7 +60,6 @@ public class Message {
     @JsonProperty
     private String OriContent;
 
-
     public String getMsgId() {
         return MsgId;
     }
@@ -101,19 +100,19 @@ public class Message {
         Content = content;
     }
 
-    public int getStatus() {
+    public long getStatus() {
         return Status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(long status) {
         Status = status;
     }
 
-    public int getImgStatus() {
+    public long getImgStatus() {
         return ImgStatus;
     }
 
-    public void setImgStatus(int imgStatus) {
+    public void setImgStatus(long imgStatus) {
         ImgStatus = imgStatus;
     }
 
@@ -197,11 +196,11 @@ public class Message {
         StatusNotifyUserName = statusNotifyUserName;
     }
 
-    public RecommendInfo getRecommendInfo() {
+    public com.cherry.jeeves.domain.shared.RecommendInfo getRecommendInfo() {
         return RecommendInfo;
     }
 
-    public void setRecommendInfo(RecommendInfo recommendInfo) {
+    public void setRecommendInfo(com.cherry.jeeves.domain.shared.RecommendInfo recommendInfo) {
         RecommendInfo = recommendInfo;
     }
 
@@ -213,11 +212,11 @@ public class Message {
         ForwardFlag = forwardFlag;
     }
 
-    public AppInfo getAppInfo() {
+    public com.cherry.jeeves.domain.shared.AppInfo getAppInfo() {
         return AppInfo;
     }
 
-    public void setAppInfo(AppInfo appInfo) {
+    public void setAppInfo(com.cherry.jeeves.domain.shared.AppInfo appInfo) {
         AppInfo = appInfo;
     }
 

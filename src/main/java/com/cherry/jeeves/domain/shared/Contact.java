@@ -14,9 +14,9 @@ public class Contact extends Member {
     @JsonProperty
     private int OwnerUin;
     @JsonProperty
-    private int Statues;
+    private long Statues;
     @JsonProperty
-    private int AttrStatus;
+    private long AttrStatus;
     @JsonProperty
     private String Province;
     @JsonProperty
@@ -28,7 +28,7 @@ public class Contact extends Member {
     @JsonProperty
     private String DisplayName;
     @JsonProperty
-    private int ChatRoomId;
+    private long ChatRoomId;
     @JsonProperty
     private String KeyWord;
     @JsonProperty
@@ -36,19 +36,19 @@ public class Contact extends Member {
     @JsonProperty
     private int IsOwner;
 
-    public int getStatues() {
+    public long getStatues() {
         return Statues;
     }
 
-    public void setStatues(int statues) {
+    public void setStatues(long statues) {
         Statues = statues;
     }
 
-    public int getAttrStatus() {
+    public long getAttrStatus() {
         return AttrStatus;
     }
 
-    public void setAttrStatus(int attrStatus) {
+    public void setAttrStatus(long attrStatus) {
         AttrStatus = attrStatus;
     }
 
@@ -92,11 +92,11 @@ public class Contact extends Member {
         DisplayName = displayName;
     }
 
-    public int getChatRoomId() {
+    public long getChatRoomId() {
         return ChatRoomId;
     }
 
-    public void setChatRoomId(int chatRoomId) {
+    public void setChatRoomId(long chatRoomId) {
         ChatRoomId = chatRoomId;
     }
 

@@ -26,7 +26,7 @@ public class RecommendInfo {
     @JsonProperty
     private int VerifyFlag;
     @JsonProperty
-    private int AttrStatus;
+    private long AttrStatus;
     @JsonProperty
     private int Sex;
     @JsonProperty
@@ -114,11 +114,11 @@ public class RecommendInfo {
         VerifyFlag = verifyFlag;
     }
 
-    public int getAttrStatus() {
+    public long getAttrStatus() {
         return AttrStatus;
     }
 
-    public void setAttrStatus(int attrStatus) {
+    public void setAttrStatus(long attrStatus) {
         AttrStatus = attrStatus;
     }
 
