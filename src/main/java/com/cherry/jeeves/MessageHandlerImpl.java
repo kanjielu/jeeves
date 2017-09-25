@@ -47,7 +47,7 @@ public class MessageHandlerImpl implements MessageHandler {
         logger.info("to: " + message.getToUserName());
         logger.info("content:" + message.getContent());
 //        将原文回复给对方
-//        replyMessage(message);
+        replyMessage(message);
     }
 
     @Override

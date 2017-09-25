@@ -57,7 +57,7 @@ public class LoginService {
             String qrUrl = QRCodeUtils.decode(stream);
             stream.close();
             String qr = QRCodeUtils.generateQR(qrUrl, 40, 40);
-            logger.info(qr);
+            logger.info("\r\n" + qr);
             logger.info("[2] qrcode completed");
             //3 statreport
             wechatHttpServiceInternal.statReport();
