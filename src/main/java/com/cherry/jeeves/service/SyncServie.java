@@ -109,8 +109,10 @@ public class SyncServie {
                     && message.getFromUserName().startsWith("@")
                     && !message.getFromUserName().startsWith("@@")) {
                 if (message.getMsgType() == MessageType.TEXT.getCode()) {
+                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
                     messageHandler.onReceivingPrivateTextMessage(message);
                 } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
+                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
                     String fullImageUrl = String.format(WECHAT_URL_GET_MSG_IMG, cacheService.getHostUrl(), message.getMsgId(), cacheService.getsKey());
                     String thumbImageUrl = fullImageUrl + "&type=slave";
                     messageHandler.onReceivingPrivateImageMessage(message, thumbImageUrl, fullImageUrl);
@@ -119,8 +121,10 @@ public class SyncServie {
             //群聊
             else if (messageHandler != null && message.getFromUserName() != null && message.getFromUserName().startsWith("@@")) {
                 if (message.getMsgType() == MessageType.TEXT.getCode()) {
+                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
                     messageHandler.onReceivingChatRoomTextMessage(message);
                 } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
+                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
                     String fullImageUrl = String.format(WECHAT_URL_GET_MSG_IMG, cacheService.getHostUrl(), message.getMsgId(), cacheService.getsKey());
                     String thumbImageUrl = fullImageUrl + "&type=slave";
                     messageHandler.onReceivingChatRoomImageMessage(message, thumbImageUrl, fullImageUrl);

@@ -50,6 +50,8 @@ public class CacheService {
     private Set<Contact> mediaPlatforms = new HashSet<>();
     private Set<Contact> chatRooms = new HashSet<>();
 
+    private Set<String> contactNamesWithUnreadMessage = new HashSet<>();
+
     public boolean isAlive() {
         return alive;
     }
@@ -159,23 +161,15 @@ public class CacheService {
         this.syncUrl = syncUrl;
     }
 
-    public void setIndividuals(Set<Contact> individuals) {
-        this.individuals = individuals;
-    }
-
-    public void setMediaPlatforms(Set<Contact> mediaPlatforms) {
-        this.mediaPlatforms = mediaPlatforms;
-    }
-
-    public void setChatRooms(Set<Contact> chatRooms) {
-        this.chatRooms = chatRooms;
-    }
-
     public String getFileUrl() {
         return fileUrl;
     }
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public Set<String> getContactNamesWithUnreadMessage() {
+        return contactNamesWithUnreadMessage;
     }
 }

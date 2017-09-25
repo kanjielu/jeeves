@@ -24,7 +24,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -476,14 +475,6 @@ class WechatHttpServiceInternal {
         ResponseEntity<String> responseEntity
                 = restTemplate.exchange(uri, HttpMethod.POST, new HttpEntity<>(request, this.postHeader), String.class);
         return jsonMapper.readValue(WechatUtils.textDecode(responseEntity.getBody()), VerifyUserResponse.class);
-    }
-
-    void sendAppMsg() {
-        throw new NotImplementedException();
-    }
-
-    void sendImageMsg() {
-        throw new NotImplementedException();
     }
 
     SendMsgResponse sendText(String hostUrl, BaseRequest baseRequest, String content, String fromUserName, String toUserName) throws IOException {
