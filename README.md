@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.org/kanjielu/jeeves.svg?branch=master)](https://travis-ci.org/kanjielu/jeeves)
 
 A smart WeChat bot.
-[中文文档](https://github.com/kanjielu/jeeves/blob/dev/README.zh-CN.md)
+
+[中文文档](https://github.com/kanjielu/jeeves/blob/master/README.zh-CN.md)
 
 ## Getting Started
 
@@ -17,14 +18,14 @@ mvn spring-boot:run
 
 You should see the following logs.
 
-![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login1.png?raw=true "Await Scanning")
+![alt text](https://github.com/kanjielu/jeeves/blob/master/images/login1.png?raw=true "Await Scanning")
 
 After scanning and confirming login
 
-![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login2.png?raw=true "Login Successfully")
+![alt text](https://github.com/kanjielu/jeeves/blob/master/images/login2.png?raw=true "Login Successfully")
 
 ### Login process
-![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login-process-diagram.png?raw=true "Login process diagram")
+![alt text](https://github.com/kanjielu/jeeves/blob/master/images/login-process-diagram.png?raw=true "Login process diagram")
 
 ### Example
 `com.cherry.jeeves.MessageHandlerImpl` is provided as an example of jeeves. You can modify the code in `MessageHandlerImpl` yourself or create another Spring Bean of `MessageHandler` to meet your requirements.
@@ -275,7 +276,7 @@ A: Jeeves is a perfect tool if you'd like to store all the messages locally. As 
 
 > Q: What can't jeeves do?
 
-A: Jeeves is still in development. Some complicated features such as sending an image is still in the todo list. Find all the available events and apis in the [Usages](#usages).
+A: Jeeves is still in masterelopment. Some complicated features such as sending an image is still in the todo list. Find all the available events and apis in the [Usages](#usages).
 
 > Q: Can jeeves prevent itself from disconnecting from server?
 

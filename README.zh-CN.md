@@ -4,6 +4,8 @@
 
 A smart WeChat bot.
 
+[English Docs](https://github.com/kanjielu/jeeves/blob/master/README.md)
+
 ## Getting Started
 
 ### 运行环境
@@ -16,14 +18,14 @@ mvn spring-boot:run
 
 启动后，会看到如下的日志信息：
 
-![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login1.png?raw=true "Await Scanning")
+![alt text](https://github.com/kanjielu/jeeves/blob/master/images/login1.png?raw=true "Await Scanning")
 
 扫过二维码，点击确认登录后
 
-![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login2.png?raw=true "Login Successfully")
+![alt text](https://github.com/kanjielu/jeeves/blob/master/images/login2.png?raw=true "Login Successfully")
 
 ### 登录过程
-![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login-process-diagram.png?raw=true "Login process diagram")
+![alt text](https://github.com/kanjielu/jeeves/blob/master/images/login-process-diagram.png?raw=true "Login process diagram")
 
 ### 示例
 `com.cherry.jeeves.MessageHandlerImpl` 是一个jeeves默认提供的一个示例程序。如果需要自定义修改，可以直接改动 `MessageHandlerImpl` 的代码，或者创建另一个继承`MessageHandler`的Spring Bean。
@@ -263,7 +265,7 @@ A: Jeeves是使用Web微信的协议。
 
 A: Jeeves的目标就是把自己伪装成一个普通的Web微信客户端，因此我们很重视细节。Jeeves除了会发送登录流程中必需的请求，还会发送其他的一些请求，例如：跨平台的状态同步请求，客户端状态上报请求等。Jeeves能模拟的细节越多，您的账号就越安全。当前，Jeeves已经能模拟但不限于以下几点：
 
-* 登录流程中，首先请求登录页面（https://wx.qq.com）。一个正常的客户端，一定是先请求登录页面，然后再用javascript开始请求服务器的，但是大多数微信机器人都没有这么做，他们直接跳到获取UUID的步骤了。
+* 登录流程中，首先请求[登录页面](https://wx.qq.com)。一个正常的客户端，一定是先请求登录页面，然后再用javascript开始请求服务器的，但是大多数微信机器人都没有这么做，他们直接跳到获取UUID的步骤了。
 
 * Jeeves保存了绝大多数的cookie信息，甚至在请求图片的时候，也会携带cookie信息，尽可能地模拟浏览器的真实行为。 
 
@@ -271,7 +273,7 @@ A: Jeeves的目标就是把自己伪装成一个普通的Web微信客户端，�
 
 * Jeeves知道如何正确生成随机数和随机时间戳，因为我们研读过Web微信的javascript代码。
 
-* 一个状态上报请求，如果带有`StatusNotifyCode.READED`，那这个请求是为了告诉手机移动端，该会话的所有消息都已读了。Jeeves会替你检查，并在必要的时候发出这个请求。每当你发一条消息的时候，jeeves都会检查，在这个会话中，是否之前有未读消息。如果有的话，它会在真正的聊天消息发出去之前，发送状态上报请求。这是正确且合理的。试想，在使用Web微信聊天的过程中，您是否可能在还没有读之前消息的状态下继续发送消息呢？
+* 一个状态上报请求，如果带有`StatusNotifyCode.READED`，那这个请求是为了告诉手机移动端，该会话的所有消息都已读了。Jeeves会替您检查，并在必要的时候发出这个请求。每当您发一条消息的时候，jeeves都会检查，在这个会话中，是否之前有未读消息。如果有的话，它会在真正的聊天消息发出去之前，发送状态上报请求。这是正确且合理的。试想，在使用Web微信聊天的过程中，您是否可能在还没有读之前消息的状态下继续发送消息呢？
 
 > Q: Jeeves能做什么？
 
@@ -287,7 +289,7 @@ A: 不能保证。通常来说，jeeves可以保证在线几个小时到两天�
 
 > Q: 为什么我的微信账号被禁止登录了?
 
-A: 有很多方面的原因。腾讯对您账号的使用行为和数据有各种统计。如果您有一些不正常的行为，就有可能被禁止登录。例如给一个不存在的人发送消息，或者给一个你根本不应该可以聊天的人（例如非好友）发送消息。 除此之外，腾讯对每个账户的各种日常行为设定一个上限次数。如果您对账号超过了这个次数，也有可能被认为是不正常使用，导致被禁。例如在短时间内登录次数太多。
+A: 有很多方面的原因。腾讯对您账号的使用行为和数据有各种统计。如果您有一些不正常的行为，就有可能被禁止登录。例如给一个不存在的人发送消息，或者给一个您根本不应该可以聊天的人（例如非好友）发送消息。 除此之外，腾讯对每个账户的各种日常行为设定一个上限次数。如果您对账号超过了这个次数，也有可能被认为是不正常使用，导致被禁。例如在短时间内登录次数太多。
 
 ## 已知问题
 * Jeeves 使用 [ZXing](https://github.com/zxing/zxing) 来在终端输出二维码。在比较少的情况下，ZXing会抛出`com.google.zxing.NotFoundException`。该问题还在调查中，一般来说，重启jeeves，获得新的二维码就避开这个问题。 
