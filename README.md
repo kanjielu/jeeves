@@ -149,24 +149,90 @@ void onMediaPlatformsDeleted(Set<Contact> mps);
 ### API
 `WechatHttpService` has provided a bundle of apis that you can use to interact with the server.
 
-####
+#### Get all the contacts
 ```java
 Set<Contact> getContact()
 ```
 | Returns |
 | --- |
-| get all the contacts, including friends, chatrooms and media platforms  ( type: `Set<Contact>` )|
+| all the contacts, including friends, chatrooms and media platforms  ( type: `Set<Contact>` )|
 
+#### Get all the members in given chatrooms
 ```java
 Set<Contact> batchGetContact(Set<String> list)
 ```
 | Parameters | Meaning |
 | --- | --- |
-| `list` | a |
+| `list` | the list of usernames of chatrooms |
 
 | Returns |
 | --- |
-| get all the members in given chatrooms  ( type: `Set<Contact>` )|
+| chatrooms populated with all the members ( type: `Set<Contact>` )|
+
+#### Send plain text
+```java
+void sendText(String userName, String content)
+```
+| Parameters | Meaning |
+| --- | --- |
+| `userName` | the username of the contact that you send message to |
+| `content` | the content of the message |
+
+#### Set alias to given contact
+```java
+void setAlias(String userName, String newAlias)
+```
+| Parameters | Meaning |
+| --- | --- |
+| `userName` | the username of the contact that you set alias to |
+| `newAlias` | the alias |
+
+#### logout
+```java
+void logout()
+```
+
+#### Create a chatroom
+```java
+void createChatRoom(String[] userNames, String topic)
+```
+| Parameters | Meaning |
+| --- | --- |
+| `userNames` | the usernames of the contacts who are invited to the chatroom |
+| `topic` | the topic(or nickname) |
+
+#### Invite a contact to a certain chatroom
+```java
+void addChatRoomMember(String chatRoomUserName, String userName)
+```
+| Parameters | Meaning |
+| --- | --- |
+| `chatRoomUserName` | chatroom username |
+| `userName` | contact username |
+
+#### Delete a contact from a certain chatroom (if you're the owner!)
+```java
+void deleteChatRoomMember(String chatRoomUserName, String userName)
+```
+| Parameters | Meaning |
+| --- | --- |
+| `chatRoomUserName` | chatroom username |
+| `userName` | contact username |
+
+#### Download images in the conversation. 
+
+Note that it's better not to download image directly. This method has included cookies in the request.
+
+```java
+byte[] downloadImage(String url)
+```
+| Parameters | Meaning |
+| --- | --- |
+| `url` | the url of the image |
+
+| Returns |
+| --- |
+| the data of the image  ( type: `byte[]` )|
 
 ## Bugs and Feedback
 For bugs, questions and discussions please use the [Github Issues](https://github.com/kanjielu/jeeves/issues).
