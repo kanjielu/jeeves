@@ -15,6 +15,27 @@ JDK 8
 mvn spring-boot:run
 ```
 
+You should see the following logs.
+
+![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login1.png?raw=true "Await Scanning")
+
+After scanning
+
+![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login2.png?raw=true "Login Successfully")
+
+### Login process
+![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login-process-diagram.png?raw=true "Login process diagram")
+
+### Example
+`com.cherry.jeeves.MessageHandlerImpl` is provided as an example of jeeves. You can modify the code in `MessageHandlerImpl` yourself or create another Spring Bean of `MessageHandler` to meet your requirements.
+
+The default behaviors that are set in `MessageHandlerImpl` are:
+* Auto-save thumb images in image messages to local disk.
+* Auto-reply plain text messages.
+* Accept all friend invitations.
+* After accepting friend invitations, set alias to the friend.
+* Log for all other events.
+
 ## Usages
 ### Events
 A bean that implements `MessageHandler` will be notified on all the following events.
@@ -219,7 +240,7 @@ void deleteChatRoomMember(String chatRoomUserName, String userName)
 | `chatRoomUserName` | chatroom username |
 | `userName` | contact username |
 
-#### Download images in the conversation. 
+#### Download images in the conversation
 
 Note that it's better not to download image directly. This method has included cookies in the request.
 
@@ -244,7 +265,7 @@ A: Jeeves is running on WeChat web protocols.
 A: Jeeves is aimed to disguise itself as a normal web WeChat app. So we value **details**. Jeeves not only submits requests which are essential to login process, but also submits those are used for cross-platform status synchronization, status report and so on. The more details jeeves imitate, the safer your account is. Jeeves provides the following imitations.
 * Jeeves starts login process with requesting the login page (default as https://wx.qq.com) while most other bots skip directly to getting uuid.
 * Jeeves stores all the cookies carefully. It evens brings cookies in a request for getting images, which makes the request look like it's from a real browser. 
-* During the login process, when the qr code is expired, jeeves will start over the whole login process to get a new qr code. But in the following requests, a `refreshTimes` cookie is inserted, which indicates how many times that jeeves has started over. This is the way a **real** web WeChat app works.
+* During the login process, when the QR code is expired, jeeves will start over the whole login process to get a new QR code. But in the following requests, a `refreshTimes` cookie is inserted, which indicates how many times that jeeves has started over. This is the way a **real** web WeChat app works.
 * Jeeves knows how to generate a random code/timestamp just as web WeChat do. We've studied some javascript code of web WeChat.
 * A `statusNotify` request with `StatusNotifyCode.READED` is used to notify the mobile WeChat app that all the messages in a given conversation have been read. Jeeves takes care of it for you. When you send a plain text message to a contact, jeeves would check if there're any unread messages in the conversation between you and the contact. If true, jeeves will first send out `statusNotify` to mark all these message read prior to the message request, which makes sense in a real world case.
 
@@ -258,11 +279,20 @@ A: Jeeves is still in development. Some complicated features such as sending an 
 
 > Q: Can jeeves prevent itself from disconnecting from server?
 
-A: Jeeves can't guarantee it. We're still working on it. To stay connected as long as possible, **DON'T** have any unusual behaviors that real humans don't have. For example, sending 100 messages in one second.
+A: Jeeves can't guarantee it. We're still working on it. Usually jeeves can stay for hours, up to 2 days. To stay connected as long as possible, **DON'T** have any unusual behaviors that real humans don't have. For example, sending 100 messages in one second.
 
 > Q: Why is my account blocked on web WeChat?
 
 A: It depends on lots of factors. Tencent has statistics of all the behaviors and data of your account. Some unusual behaviors would put your account in risk. For example, sending messages to a person doesn't exist or you're not allowed to chat with. Additionally, Tencent has a list of the limits on all kinds of actions that an account can take. If your account exceeds the boundary, it could be blocked. For example, too many times of login in a short time.
+
+## Known Issues
+* Jeeves is using ZXing for printing QR in terminal. It's seldom that `com.google.zxing.NotFoundException` is thrown. We're still investigating into it. To workaround it, just restart jeeves.
+
+## Warning
+Using any WeChat bots, including jeeves, could cause your account be blocked. It's at your own risk.
+
+## Credits
+Jeeves project is inspired by [ItChat](https://github.com/littlecodersh/ItChat) and [WeixinBot](https://github.com/Urinx/WeixinBot).
 
 ## Bugs and Feedback
 For bugs, questions and discussions please use the [Github Issues](https://github.com/kanjielu/jeeves/issues).
