@@ -1,9 +1,9 @@
 # jeeves
 
 [![Build Status](https://travis-ci.org/kanjielu/jeeves.svg?branch=master)](https://travis-ci.org/kanjielu/jeeves)
-[![Coverage Status](https://coveralls.io/repos/github/kanjielu/jeeves/badge.svg?branch=master)](https://coveralls.io/github/kanjielu/jeeves?branch=master)
 
 A smart WeChat bot.
+[中文文档](https://github.com/kanjielu/jeeves/blob/dev/README.zh-CN.md)
 
 ## Getting Started
 
@@ -19,7 +19,7 @@ You should see the following logs.
 
 ![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login1.png?raw=true "Await Scanning")
 
-After scanning
+After scanning and confirming login
 
 ![alt text](https://github.com/kanjielu/jeeves/blob/dev/images/login2.png?raw=true "Login Successfully")
 
@@ -57,8 +57,8 @@ void onReceivingPrivateTextMessage(Message message, String thumbImageUrl, String
 | Parameters | Meaning |
 | --- | --- |
 | `message` | received message |
-|`thumbImageUrl`| image in small size|
-|`fullImageUrl`| image in full size|
+|`thumbImageUrl`| url of image in small size|
+|`fullImageUrl`| url of image in full size|
 
 #### ChatRoom text message
 ```java
@@ -77,8 +77,8 @@ void onReceivingChatRoomImageMessage(Message message, String thumbImageUrl, Stri
 | Parameters | Meaning |
 | --- | --- |
 | `message` | received message |
-|`thumbImageUrl`| image in small size|
-|`fullImageUrl`| image in full size|
+|`thumbImageUrl`| url of image in small size|
+|`fullImageUrl`| url of image in full size|
 
 #### Received a friend invitation
 ```java
@@ -238,7 +238,7 @@ void deleteChatRoomMember(String chatRoomUserName, String userName)
 | Parameters | Meaning |
 | --- | --- |
 | `chatRoomUserName` | chatroom username |
-| `userName` | contact username |
+| `userName` | member username |
 
 #### Download images in the conversation
 
@@ -286,7 +286,7 @@ A: Jeeves can't guarantee it. We're still working on it. Usually jeeves can stay
 A: It depends on lots of factors. Tencent has statistics of all the behaviors and data of your account. Some unusual behaviors would put your account in risk. For example, sending messages to a person doesn't exist or you're not allowed to chat with. Additionally, Tencent has a list of the limits on all kinds of actions that an account can take. If your account exceeds the boundary, it could be blocked. For example, too many times of login in a short time.
 
 ## Known Issues
-* Jeeves is using ZXing for printing QR in terminal. It's seldom that `com.google.zxing.NotFoundException` is thrown. We're still investigating into it. To workaround it, just restart jeeves.
+* Jeeves is using [ZXing](https://github.com/zxing/zxing) for printing QR in terminal. It's seldom that `com.google.zxing.NotFoundException` is thrown. We're still investigating into it. To workaround it, just restart jeeves.
 
 ## Warning
 Using any WeChat bots, including jeeves, could cause your account be blocked. It's at your own risk.
