@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/kanjielu/jeeves.svg?branch=master)](https://travis-ci.org/kanjielu/jeeves)
 [![Coverage Status](https://coveralls.io/repos/github/kanjielu/jeeves/badge.svg?branch=master)](https://coveralls.io/github/kanjielu/jeeves?branch=master)
 
-A smart wechat bot.
+A smart WeChat bot.
 
 ## Getting Started
 
@@ -234,5 +234,39 @@ byte[] downloadImage(String url)
 | --- |
 | the data of the image  ( type: `byte[]` )|
 
+## FAQ
+> Q: What protocols is jeeves running on?
+
+A: Jeeves is running on WeChat web protocols.
+
+> Q: How is jeeves different from other WeChat bots?
+
+A: Jeeves is aimed to disguise itself as a normal web WeChat app. So we value **details**. Jeeves not only submits requests which are essential to login process, but also submits those are used for cross-platform status synchronization, status report and so on. The more details jeeves imitate, the safer your account is. Jeeves provides the following imitations.
+* Jeeves starts login process with requesting the login page (default as https://wx.qq.com) while most other bots skip directly to getting uuid.
+* Jeeves stores all the cookies carefully. It evens brings cookies in a request for getting images, which makes the request look like it's from a real browser. 
+* During the login process, when the qr code is expired, jeeves will start over the whole login process to get a new qr code. But in the following requests, a `refreshTimes` cookie is inserted, which indicates how many times that jeeves has started over. This is the way a **real** web WeChat app works.
+* Jeeves knows how to generate a random code/timestamp just as web WeChat do. We've studied some javascript code of web WeChat.
+* A `statusNotify` request with `StatusNotifyCode.READED` is used to notify the mobile WeChat app that all the messages in a given conversation have been read. Jeeves takes care of it for you. When you send a plain text message to a contact, jeeves would check if there're any unread messages in the conversation between you and the contact. If true, jeeves will first send out `statusNotify` to mark all these message read prior to the message request, which makes sense in a real world case.
+
+> Q: What can I do using jeeves?
+
+A: Jeeves is a perfect tool if you'd like to store all the messages locally. As a mischief, you can send the messages that others have recalled back to chatroom. Use your imagination!
+
+> Q: What can't jeeves do?
+
+A: Jeeves is still in development. Some complicated features such as sending an image is still in the todo list. Find all the available events and apis in the [Usages](#usages).
+
+> Q: Can jeeves prevent itself from disconnecting from server?
+
+A: Jeeves can't guarantee it. We're still working on it. To stay connected as long as possible, **DON'T** have any unusual behaviors that real humans don't have. For example, sending 100 messages in one second.
+
+> Q: Why is my account blocked on web WeChat?
+
+A: It depends on lots of factors. Tencent has statistics of all the behaviors and data of your account. Some unusual behaviors would put your account in risk. For example, sending messages to a person doesn't exist or you're not allowed to chat with. Additionally, Tencent has a list of the limits on all kinds of actions that an account can take. If your account exceeds the boundary, it could be blocked. For example, too many times of login in a short time.
+
 ## Bugs and Feedback
 For bugs, questions and discussions please use the [Github Issues](https://github.com/kanjielu/jeeves/issues).
+
+## License
+
+[MIT](LICENSE)
