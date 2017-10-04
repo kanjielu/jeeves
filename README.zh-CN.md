@@ -61,7 +61,7 @@ void onReceivingPrivateTextMessage(Message message, String thumbImageUrl, String
 |`thumbImageUrl`| 缩略图URL |
 |`fullImageUrl`| 原图URL |
 
-#### ChatRoom text message
+#### 聊天群文本消息
 ```java
 void onReceivingChatRoomTextMessage(Message message);
 ```
@@ -70,7 +70,7 @@ void onReceivingChatRoomTextMessage(Message message);
 | --- | --- |
 | `message` | 收到的消息 |
 
-#### ChatRoom image message
+#### 聊天群图片消息
 ```java
 void onReceivingChatRoomImageMessage(Message message, String thumbImageUrl, String fullImageUrl);
 ```
