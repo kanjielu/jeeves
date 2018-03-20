@@ -19,6 +19,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,8 @@ public class SyncServie {
 
     @Value("${wechat.url.get_msg_img}")
     private String WECHAT_URL_GET_MSG_IMG;
+
+    private final static String RED_PACKET_CONTENT = "收到红包，请在手机上查看";
 
     @PostConstruct
     public void setMessageHandler() {
@@ -101,48 +104,80 @@ public class SyncServie {
         WechatUtils.checkBaseResponse(verifyUserResponse);
     }
 
+    private boolean isMessageFromIndividual(Message message) {
+        return message.getFromUserName() != null
+                && message.getFromUserName().startsWith("@")
+                && !message.getFromUserName().startsWith("@@");
+    }
+
+    private boolean isMessageFromChatRoom(Message message) {
+        return message.getFromUserName() != null && message.getFromUserName().startsWith("@@");
+    }
+
     private void onNewMessage() throws IOException, URISyntaxException {
         SyncResponse syncResponse = sync();
+        if (messageHandler == null) {
+            return;
+        }
         for (Message message : syncResponse.getAddMsgList()) {
-            //私信
-            if (messageHandler != null && message.getFromUserName() != null
-                    && message.getFromUserName().startsWith("@")
-                    && !message.getFromUserName().startsWith("@@")) {
-                if (message.getMsgType() == MessageType.TEXT.getCode()) {
-                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
+            //文本消息
+            if (message.getMsgType() == MessageType.TEXT.getCode()) {
+                cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
+                //个人
+                if (isMessageFromIndividual(message)) {
                     messageHandler.onReceivingPrivateTextMessage(message);
-                } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
-                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
-                    String fullImageUrl = String.format(WECHAT_URL_GET_MSG_IMG, cacheService.getHostUrl(), message.getMsgId(), cacheService.getsKey());
-                    String thumbImageUrl = fullImageUrl + "&type=slave";
+                }
+                //群
+                else if (isMessageFromChatRoom(message)) {
+                    messageHandler.onReceivingChatRoomTextMessage(message);
+                }
+                //图片
+            } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
+                cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
+                String fullImageUrl = String.format(WECHAT_URL_GET_MSG_IMG, cacheService.getHostUrl(), message.getMsgId(), cacheService.getsKey());
+                String thumbImageUrl = fullImageUrl + "&type=slave";
+                //个人
+                if (isMessageFromIndividual(message)) {
                     messageHandler.onReceivingPrivateImageMessage(message, thumbImageUrl, fullImageUrl);
                 }
-            }
-            //群聊
-            else if (messageHandler != null && message.getFromUserName() != null && message.getFromUserName().startsWith("@@")) {
-                if (message.getMsgType() == MessageType.TEXT.getCode()) {
-                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
-                    messageHandler.onReceivingChatRoomTextMessage(message);
-                } else if (message.getMsgType() == MessageType.IMAGE.getCode()) {
-                    cacheService.getContactNamesWithUnreadMessage().add(message.getFromUserName());
-                    String fullImageUrl = String.format(WECHAT_URL_GET_MSG_IMG, cacheService.getHostUrl(), message.getMsgId(), cacheService.getsKey());
-                    String thumbImageUrl = fullImageUrl + "&type=slave";
+                //群
+                else if (isMessageFromChatRoom(message)) {
                     messageHandler.onReceivingChatRoomImageMessage(message, thumbImageUrl, fullImageUrl);
+                }
+            }
+            //系统消息
+            else if (message.getMsgType() == MessageType.SYS.getCode()) {
+                //红包
+                if (RED_PACKET_CONTENT.equals(message.getContent())) {
+                    logger.info("[*] you've received a red packet");
+                    String from = message.getFromUserName();
+                    Set<Contact> contacts = null;
+                    //个人
+                    if (isMessageFromIndividual(message)) {
+                        contacts = cacheService.getIndividuals();
+                    }
+                    //群
+                    else if (isMessageFromChatRoom(message)) {
+                        contacts = cacheService.getChatRooms();
+                    }
+                    if (contacts != null) {
+                        Contact contact = contacts.stream().filter(x -> Objects.equals(x.getUserName(), from)).findAny().orElse(null);
+                        messageHandler.onRedPacketReceived(contact);
+                    }
                 }
             }
             //好友邀请
             else if (message.getMsgType() == MessageType.VERIFYMSG.getCode() && cacheService.getOwner().getUserName().equals(message.getToUserName())) {
-                if (messageHandler != null) {
-                    if (messageHandler.onReceivingFriendInvitation(message.getRecommendInfo())) {
-                        acceptFriendInvitation(message.getRecommendInfo());
-                        logger.info("[*] you've accepted the invitation");
-                        messageHandler.postAcceptFriendInvitation(message);
-                    } else {
-                        logger.info("[*] you've declined the invitation");
-                        //TODO decline invitation
-                    }
+                if (messageHandler.onReceivingFriendInvitation(message.getRecommendInfo())) {
+                    acceptFriendInvitation(message.getRecommendInfo());
+                    logger.info("[*] you've accepted the invitation");
+                    messageHandler.postAcceptFriendInvitation(message);
+                } else {
+                    logger.info("[*] you've declined the invitation");
+                    //TODO decline invitation
                 }
             }
+
         }
     }
 

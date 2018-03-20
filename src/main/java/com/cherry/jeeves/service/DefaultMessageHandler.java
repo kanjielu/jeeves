@@ -35,7 +35,7 @@ public class DefaultMessageHandler implements MessageHandler {
     }
 
     @Override
-    public boolean onReceivingFriendInvitation(RecommendInfo info) throws IOException {
+    public boolean onReceivingFriendInvitation(RecommendInfo info) {
         logger.info("onReceivingFriendInvitation");
         return false;
     }
@@ -78,5 +78,10 @@ public class DefaultMessageHandler implements MessageHandler {
     @Override
     public void onMediaPlatformsDeleted(Set<Contact> mps) {
         logger.info("onMediaPlatformsDeleted");
+    }
+
+    @Override
+    public void onRedPacketReceived(Contact contact) {
+        logger.info("onRedPacketReceived");
     }
 }

@@ -61,7 +61,7 @@ void onReceivingPrivateTextMessage(Message message, String thumbImageUrl, String
 |`thumbImageUrl`| 缩略图URL |
 |`fullImageUrl`| 原图URL |
 
-#### ChatRoom text message
+#### 聊天群文本消息
 ```java
 void onReceivingChatRoomTextMessage(Message message);
 ```
@@ -70,7 +70,7 @@ void onReceivingChatRoomTextMessage(Message message);
 | --- | --- |
 | `message` | 收到的消息 |
 
-#### ChatRoom image message
+#### 聊天群图片消息
 ```java
 void onReceivingChatRoomImageMessage(Message message, String thumbImageUrl, String fullImageUrl);
 ```
@@ -167,6 +167,15 @@ void onMediaPlatformsDeleted(Set<Contact> mps);
 | 参数 | 含义 |
 | --- | --- |
 | `mps` | 被删除的公众号 |
+
+#### 收到红包
+```java
+void onRedPacketReceived(Contact contact);
+```
+
+| 参数 | 含义 |
+| --- | --- |
+| `contact` | 发红包的好友或者群 |
 
 ### API
 `WechatHttpService` 已经提供了各式各样的API供您使用。
