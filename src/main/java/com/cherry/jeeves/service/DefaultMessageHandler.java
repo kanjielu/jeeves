@@ -35,7 +35,7 @@ public class DefaultMessageHandler implements MessageHandler {
     }
 
     @Override
-    public boolean onReceivingFriendInvitation(RecommendInfo info) throws IOException {
+    public boolean onReceivingFriendInvitation(RecommendInfo info) {
         logger.info("onReceivingFriendInvitation");
         return false;
     }

@@ -168,6 +168,15 @@ void onMediaPlatformsDeleted(Set<Contact> mps);
 | --- | --- |
 | `mps` | 被删除的公众号 |
 
+#### 收到红包
+```java
+void onRedPacketReceived(Contact contact);
+```
+
+| 参数 | 含义 |
+| --- | --- |
+| `contact` | 发红包的好友或者群 |
+
 ### API
 `WechatHttpService` 已经提供了各式各样的API供您使用。
 

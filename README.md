@@ -168,6 +168,15 @@ void onMediaPlatformsDeleted(Set<Contact> mps);
 | --- | --- |
 | `mps` | a list of media platforms that are deleted |
 
+#### Red packet received
+```java
+void onRedPacketReceived(Contact contact);
+```
+
+| Parameters | Meaning |
+| --- | --- |
+| `contact` | where the red packet is recevied |
+
 ### API
 `WechatHttpService` has provided a bundle of apis that you can use to interact with the server.
 
