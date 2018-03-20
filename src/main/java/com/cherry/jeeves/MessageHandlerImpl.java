@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Set;
@@ -63,7 +64,7 @@ public class MessageHandlerImpl implements MessageHandler {
     }
 
     @Override
-    public boolean onReceivingFriendInvitation(RecommendInfo info) throws IOException {
+    public boolean onReceivingFriendInvitation(RecommendInfo info) {
         logger.info("onReceivingFriendInvitation");
         logger.info("recommendinfo content:" + info.getContent());
 //        默认接收所有的邀请
@@ -130,6 +131,14 @@ public class MessageHandlerImpl implements MessageHandler {
     @Override
     public void onMediaPlatformsDeleted(Set<Contact> mps) {
         logger.info("onMediaPlatformsDeleted");
+    }
+
+    @Override
+    public void onRedPacketReceived(Contact contact) {
+        logger.info("onRedPacketReceived");
+        if (contact != null) {
+            logger.info("the red packet is from " + contact.getNickName());
+        }
     }
 
     private void replyMessage(Message message) throws IOException {

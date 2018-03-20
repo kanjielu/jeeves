@@ -79,4 +79,9 @@ public class DefaultMessageHandler implements MessageHandler {
     public void onMediaPlatformsDeleted(Set<Contact> mps) {
         logger.info("onMediaPlatformsDeleted");
     }
+
+    @Override
+    public void onRedPacketReceived(Contact contact) {
+        logger.info("onRedPacketReceived");
+    }
 }
